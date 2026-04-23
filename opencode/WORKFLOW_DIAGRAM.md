@@ -22,16 +22,18 @@ flowchart LR
     WR -->|qwen-operator| QO[qwen-operator<br/>Qwen 3.5 Plus<br/>tests / evals / git / PR]
     WR -->|kimi-context| KC[kimi-context<br/>compress large context]
     WR -->|glm-analyzer| GA[glm-analyzer<br/>RCA / tradeoffs / risk]
+    WR -->|glm-reviewer| GV[glm-reviewer<br/>GLM-5<br/>default final review]
     WR -->|revenuecat-agent| RC[revenuecat-agent<br/>RevenueCat MCP specialist]
     WR -->|minimax-writer| MW[minimax-writer<br/>naming / rewrite / copy]
     WR -->|general| GE[general<br/>parallel subtasks]
-    WR -->|review-only| GR[gpt-critic<br/>GPT-5.4<br/>review-only path]
+    WR -->|escalation review| GR[gpt-critic<br/>GPT-5.4<br/>escalation-only path]
 
     EX --> A
     QC --> A
     QO --> A
     KC --> A
     GA --> A
+    GV --> A
     RC --> A
     MW --> A
     GE --> A
@@ -41,12 +43,16 @@ flowchart LR
     E --> C{Did final state change files?}
 
     C -->|No| R
-    C -->|Yes| G[gpt-critic<br/>GPT-5.4<br/>final review]
+    C -->|Yes| G[glm-reviewer<br/>GLM-5<br/>default final review]
 
     G --> M{Material issue found?}
     M -->|No| F[Finish / commit / PR / answer]
     M -->|Yes| FX[Fix issue in auto]
     FX --> G
+    G --> H{Escalate to GPT?}
+    H -->|Yes| GP[gpt-critic<br/>GPT-5.4<br/>escalation review]
+    H -->|No| F
+    GP --> F
 
     classDef primary fill:#A5D8FF,stroke:#1c1c1c,color:#1c1c1c;
     classDef router fill:#FFD8A8,stroke:#1c1c1c,color:#1c1c1c;
@@ -63,9 +69,10 @@ flowchart LR
     class QO code;
     class KC context;
     class GA analysis;
+    class GV analysis;
     class RC context;
     class MW writing;
-    class G,GR review;
+    class G,GP,GR review;
     class EX,GE,FX neutral;
 ```
 
@@ -75,11 +82,12 @@ flowchart LR
 - `auto` handles simple work directly.
 - `workflow-route` decides which specialist to call for non-trivial work.
 - Specialists return control back to `auto`.
-- If the final state changed files, `gpt-critic` reviews the completed result.
-- If GPT finds a material issue, `auto` fixes it and runs the final review again.
+- If the final state changed files, `glm-reviewer` reviews the completed result first.
+- `gpt-critic` is used only when escalation is needed.
 
 ## Core Message
 
 Open models do almost all of the work.
 
-GPT does the final review on completed changed work, not on every intermediate edit.
+GLM does the default final review on completed changed work.
+GPT is reserved for escalation only.
