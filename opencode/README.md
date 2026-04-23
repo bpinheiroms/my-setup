@@ -67,6 +67,7 @@ This keeps the default Kimi workflow stable while still making RevenueCat availa
   - handles naming, rewrites, copy, and brainstorming
 - `GPT-5.4`
   - handles escalation review only
+  - runs at `reasoningEffort: medium`
 
 ## Actual Runtime Decision Tree
 
@@ -326,6 +327,11 @@ Good for:
 - security / migration / release checks
 - payments / billing / RevenueCat-critical review
 - tie-breaking between good approaches
+
+Runtime note:
+
+- `gpt-critic` uses `reasoningEffort: medium`
+- this is intentional to reduce 5-hour window pressure compared with `xhigh`
 
 ### `revenuecat-agent`
 
