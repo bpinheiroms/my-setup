@@ -1,8 +1,16 @@
 # my-setup
 
-My private repository for organizing and versioning the main parts of my local development setup.
+Curated snapshot of the parts of my local development setup that are worth versioning and sharing.
 
-## Structure
+## What This Repo Is
+
+This repository is a clean, portable backup of the setup I actually use.
+
+It focuses on reusable configuration, documentation, and workflow conventions.
+
+It does **not** try to mirror every machine-specific detail.
+
+## What Is Included
 
 - `zellij/`
   - base config and shortcuts for the terminal multiplexer
@@ -11,7 +19,7 @@ My private repository for organizing and versioning the main parts of my local d
   - global OpenCode config, agents, plugins, and tools
   - docs: [`opencode/README.md`](opencode/README.md)
 - `skills/`
-  - skills installed locally for Claude and agents
+  - curated skill set kept at the repository root
   - docs: [`skills/README.md`](skills/README.md)
 - `zsh/`
   - sanitized shell config for backup and restore
@@ -20,16 +28,23 @@ My private repository for organizing and versioning the main parts of my local d
   - Zed editor settings and keymap
   - docs: [`zed/README.md`](zed/README.md)
 
-## Notes
+## Principles
 
-- This repo stores configuration and documentation, not ephemeral state.
-- Secrets, tokens, histories, caches, `node_modules`, and logs are intentionally excluded.
-- Where the real local config had hardcoded credentials, this repo uses a sanitized version instead.
+- Store reusable setup, not machine noise.
+- Keep secrets, tokens, histories, caches, and logs out of version control.
+- Prefer sanitized or portable versions when the real local config contains private data.
 
-## Goal
+## Why This Exists
 
-Maintain a single place to:
+This repo gives me one place to:
 
 - restore the setup on another machine
 - document why each adjustment exists
 - review environment changes with git history
+
+## Repository Style
+
+- small, explicit folders
+- README per major area
+- no hidden dependency on local history
+- public-friendly structure when sensitive data is removed

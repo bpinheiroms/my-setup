@@ -1,46 +1,18 @@
 # Skills
 
-Organization of locally installed skills from two different sources.
+Curated subset of the local skills I actually want to keep in this repository.
 
 ## Structure
 
-- `claude/`
-  - local skills specific to the `~/.claude/skills` directory
-- `agents/`
-  - skills from the `~/.agents/skills` directory
+- `apple-guidelines/`
+- `expo-playground-patterns/`
+- `onboarding-planner/`
 
-## Important Note
+## Why Only These Three
 
-On the local machine, part of the skills inside `~/.claude/skills` point to `~/.agents/skills` via symlink.
+These are the ones I want to preserve here because they are the most useful and portable for my setup.
 
-In this repo:
-
-- the truly local `claude/` skills were copied into `skills/claude/`
-- the full catalog from the other source was copied into `skills/agents/`
-- this avoids unnecessary duplication of the same content in two places
-
-## `skills/claude/`
-
-This currently contains skills that are more specific to my local Claude usage:
-
-- `apple-guidelines`
-- `expo-playground-patterns`
-- `onboarding-planner`
-
-## `skills/agents/`
-
-This currently contains most of the reusable catalog:
-
-- `braintrust`
-- `caveman*`
-- `compress`
-- `design-md`
-- `enhance-prompt`
-- `find-skills`
-- `react-components`
-- `remotion-best-practices`
-- `shadcn-ui`
-- `stitch-*`
+Everything else was intentionally removed to keep this repository smaller, cleaner, and easier to share publicly.
 
 ## How To Navigate
 
@@ -48,10 +20,10 @@ This currently contains most of the reusable catalog:
 - some also include a `README.md`, examples, scripts, and supporting resources
 - to understand a skill, start with `SKILL.md`
 
-## Backup Intent
+## Purpose
 
 This directory exists to:
 
 - preserve specialized prompts and instructions
 - make the setup portable to another machine
-- keep a history of how the local skills evolve over time
+- keep a lightweight history of the skills I actually care about

@@ -17,7 +17,7 @@ Global OpenCode setup with a simple primary workflow, automatic routing to speci
 - `tools/workflow-route.ts`
   - deterministic task router for subagents
 - `WORKFLOW_DIAGRAM.md`
-  - Excalidraw-oriented visual spec for explaining the workflow
+  - Mermaid workflow diagram for explaining the setup visually
 - `package.json`
   - `@opencode-ai/plugin` dependency
 
@@ -44,46 +44,7 @@ Use manual commands such as `/code`, `/rca`, `/ctx`, `/draft`, or `/judge` only 
 
 ## Workflow Diagram
 
-```text
-User
-  |
-  v
-auto (Kimi)
-  |
-  +--> simple question? ------------------------> answer directly
-  |
-  +--> trivial task? ---------------------------> execute directly
-  |
-  +--> non-trivial task
-         |
-         v
-    workflow-route
-         |
-         +--> self ------------> auto handles it
-         +--> explore ---------> search repo -> back to auto
-         +--> kimi-context ----> compress context -> back to auto
-         +--> qwen-coder ------> implement focused fix -> back to auto
-         +--> glm-analyzer ----> RCA / tradeoff -> back to auto
-         +--> minimax-writer --> naming / copy / rewrite -> back to auto
-         +--> gpt-critic ------> review-only / high-stakes -> back to auto
-         +--> general ---------> parallel subtasks -> back to auto
-
-After delegation, auto remains the owner of the flow:
-- runs tests
-- runs evals
-- creates commits
-- creates PRs
-- answers the user
-
-If any file changed during the flow:
-- this is the normal implementation path
-- auto must call `gpt-critic`
-- auto does not call `gpt-critic` after every intermediate edit
-- auto calls `gpt-critic` once on the completed state of the work
-- if `gpt-critic` finds a material issue, auto fixes it
-- auto calls `gpt-critic` again only if the final state changed again after the fix
-- only then does auto finish, commit, or open a PR
-```
+See [`WORKFLOW_DIAGRAM.md`](WORKFLOW_DIAGRAM.md) for the Mermaid version.
 
 ## Custom Commands
 
