@@ -27,6 +27,79 @@ Global OpenCode setup with a simple primary workflow, automatic routing to speci
 - `small_model`: `opencode-go/minimax-m2.5`
 - default agent: `auto`
 
+## Installation
+
+This repository stores the OpenCode configuration, not the OpenCode binary itself.
+
+### Prerequisites
+
+- OpenCode installed on the machine
+- provider authentication already configured (`opencode providers`)
+- `bun` or `npm` available to install the local plugin dependency
+
+### Install On macOS/Linux
+
+Create the target directory:
+
+```bash
+mkdir -p ~/.config/opencode
+```
+
+Copy the contents of this folder into the OpenCode config directory:
+
+```bash
+rsync -a opencode/ ~/.config/opencode/
+```
+
+Install the local dependency used by the custom tool/plugin setup:
+
+```bash
+cd ~/.config/opencode && bun install
+```
+
+If you do not use Bun:
+
+```bash
+cd ~/.config/opencode && npm install
+```
+
+### What Gets Installed
+
+- `opencode.json`
+- `AGENTS.md`
+- `agents/`
+- `plugins/`
+- `tools/`
+- local package dependency for `@opencode-ai/plugin`
+
+### Verify The Setup
+
+Run:
+
+```bash
+opencode debug config
+opencode agent list
+```
+
+Expected result:
+
+- default agent is `auto`
+- main model is `opencode-go/kimi-k2.6`
+- the custom agents are visible in resolved config
+
+### Updating An Existing Setup
+
+If you already have a local OpenCode config, back it up first:
+
+```bash
+mv ~/.config/opencode ~/.config/opencode.backup
+mkdir -p ~/.config/opencode
+rsync -a opencode/ ~/.config/opencode/
+cd ~/.config/opencode && bun install
+```
+
+If you want to merge instead of replacing, review `opencode.json`, `agents/`, `plugins/`, and `tools/` carefully before copying.
+
 ## Daily Usage
 
 For normal day-to-day work, use `auto`.
