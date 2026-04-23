@@ -40,6 +40,13 @@ This repository stores the MCP server entry, not the secret key used to authenti
 
 If authentication is required on a new machine, complete it locally after restoring the OpenCode config.
 
+This setup intentionally isolates RevenueCat from the default `auto` toolset:
+
+- `revenuecat_*` tools are disabled globally
+- only `revenuecat-agent` can use them
+
+This keeps the default Kimi workflow stable while still making RevenueCat available through a dedicated specialist.
+
 ## Installation
 
 This repository stores the OpenCode configuration, not the OpenCode binary itself.
@@ -159,6 +166,8 @@ See [`WORKFLOW_DIAGRAM.md`](WORKFLOW_DIAGRAM.md) for the Mermaid version.
   - forces `kimi-context` to summarize large context
 - `/draft`
   - forces `minimax-writer` for text, naming, and brainstorming
+- `/revenuecat`
+  - forces `revenuecat-agent` for RevenueCat MCP work
 - `/judge`
   - forces `gpt-critic` for a second opinion or final review
 
@@ -232,6 +241,18 @@ Good for:
 - security / migration / release checks
 - tie-breaking between good approaches
 
+### `revenuecat-agent`
+
+Used for RevenueCat-specific questions through the isolated MCP integration.
+
+Good for:
+
+- offerings and packages
+- entitlements and access state
+- customer info and subscription status
+- purchase history questions
+- paywall and product mapping questions
+
 ## `rtk` Plugin
 
 `plugins/rtk.ts` intercepts `bash` / `shell` calls and tries to rewrite the command through `rtk rewrite`.
@@ -255,6 +276,7 @@ Possible routes:
 - `gpt-critic`
 - `kimi-context`
 - `qwen-coder`
+- `revenuecat-agent`
 - `minimax-writer`
 - `general`
 
@@ -265,6 +287,7 @@ Main heuristics:
 - review-only / final review request / high-stakes review -> `gpt-critic`
 - large context -> `kimi-context`
 - localized implementation -> `qwen-coder`
+- RevenueCat-specific work -> `revenuecat-agent`
 - writing / naming -> `minimax-writer`
 - parallel independent subtasks -> `general`
 

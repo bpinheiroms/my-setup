@@ -7,6 +7,7 @@ type Route =
   | "gpt-critic"
   | "kimi-context"
   | "qwen-coder"
+  | "revenuecat-agent"
   | "minimax-writer"
   | "general"
 
@@ -64,6 +65,19 @@ const WRITE_PATTERNS = [
   /title/i,
 ]
 
+const REVENUECAT_PATTERNS = [
+  /revenuecat/i,
+  /\bentitlement/i,
+  /\boffering/i,
+  /\bsubscription/i,
+  /\bsubscriber/i,
+  /\bcustomer info/i,
+  /\bpaywall/i,
+  /\bproduct id/i,
+  /\bpackage(s)?\b/i,
+  /\bpurchase(s|d)?\b/i,
+]
+
 const IMPLEMENT_PATTERNS = [
   /\bimplement\b/i,
   /\bfix\b/i,
@@ -107,6 +121,7 @@ export default tool({
     const gptReview = matchesAny(text, GPT_REVIEW_PATTERNS)
     const writing = matchesAny(text, WRITE_PATTERNS)
     const implementation = matchesAny(text, IMPLEMENT_PATTERNS)
+    const revenuecat = matchesAny(text, REVENUECAT_PATTERNS)
     const reviewOnly = gptReview && !implementation
 
     let route: Route = "self"
@@ -117,6 +132,15 @@ export default tool({
       route = "general"
       score = 4
       reasons.push("Multiple independent subtasks can run in parallel")
+    } else if (largeContext && revenuecat) {
+      route = "kimi-context"
+      followUp = "revenuecat-agent"
+      score = 5
+      reasons.push("Task combines large context with RevenueCat-specific analysis or tool usage")
+    } else if (revenuecat) {
+      route = "revenuecat-agent"
+      score = 4
+      reasons.push("Task is RevenueCat-specific and should use MCP tools through the dedicated agent")
     } else if (largeContext && reviewOnly) {
       route = "kimi-context"
       followUp = "gpt-critic"
@@ -161,13 +185,14 @@ export default tool({
     }
 
     const hints: string[] = []
-    if (route === "explore") hints.push("Use explore to gather file locations and quick evidence before continuing")
-    if (route === "kimi-context") hints.push("Ask for a compressed summary, key facts, gaps, and next steps")
-    if (route === "glm-analyzer") hints.push("Ask for root cause, evidence, fix options, and residual risks")
-    if (route === "gpt-critic") hints.push("Ask for findings, key risks, judgment on the approach, and the most important improvement")
-    if (route === "qwen-coder") hints.push("Ask for a focused implementation with verification on the touched path")
-    if (route === "minimax-writer") hints.push("Ask for 3 to 5 strong alternatives ranked best first")
-    if (route === "general") hints.push("Split only truly independent subtasks and integrate the results yourself")
+    if (route === "explore") hints.push("Use the Task/subagent flow with explore to gather file locations and quick evidence before continuing")
+    if (route === "kimi-context") hints.push("Use the Task/subagent flow with kimi-context and ask for a compressed summary, key facts, gaps, and next steps")
+    if (route === "glm-analyzer") hints.push("Use the Task/subagent flow with glm-analyzer and ask for root cause, evidence, fix options, and residual risks")
+    if (route === "gpt-critic") hints.push("Use the Task/subagent flow with gpt-critic and ask for findings, key risks, judgment on the approach, and the most important improvement")
+    if (route === "qwen-coder") hints.push("Use the Task/subagent flow with qwen-coder and ask for a focused implementation with verification on the touched path")
+    if (route === "revenuecat-agent") hints.push("Use the Task/subagent flow with revenuecat-agent, use RevenueCat MCP tools directly, and avoid guessing subscription or offering state")
+    if (route === "minimax-writer") hints.push("Use the Task/subagent flow with minimax-writer and ask for 3 to 5 strong alternatives ranked best first")
+    if (route === "general") hints.push("Use the Task/subagent flow with general, split only truly independent subtasks, and integrate the results yourself")
     if (followUp) hints.push(`After ${route}, continue with ${followUp}`)
     if (implementation) hints.push("If files change, run the mandatory gpt-critic review at the end, not at the start")
 
