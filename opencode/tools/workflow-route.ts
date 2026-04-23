@@ -7,6 +7,7 @@ type Route =
   | "gpt-critic"
   | "kimi-context"
   | "qwen-coder"
+  | "qwen-operator"
   | "revenuecat-agent"
   | "minimax-writer"
   | "general"
@@ -19,6 +20,11 @@ const SEARCH_PATTERNS = [
   /\bwhich file\b/i,
   /\bwhat uses\b/i,
   /\bgrep\b/i,
+  /\bonde\b/i,
+  /\bencontre\b/i,
+  /\bprocure\b/i,
+  /\blocalize\b/i,
+  /\bqual arquivo\b/i,
 ]
 
 const RCA_PATTERNS = [
@@ -33,6 +39,12 @@ const RCA_PATTERNS = [
   /\brisk\b/i,
   /architecture/i,
   /code review/i,
+  /\bpor que\b/i,
+  /causa raiz/i,
+  /\binvestigue\b/i,
+  /\bdepur/i,
+  /arquitetura/i,
+  /revis[aã]o de c[oó]digo/i,
 ]
 
 const GPT_REVIEW_PATTERNS = [
@@ -63,6 +75,36 @@ const WRITE_PATTERNS = [
   /alternative/i,
   /wording/i,
   /title/i,
+  /\bnome\b/i,
+  /reescrev/i,
+  /texto/i,
+  /copywriting/i,
+]
+
+const OPERATE_PATTERNS = [
+  /\btest(s)?\b/i,
+  /\beval(s)?\b/i,
+  /\bbenchmark\b/i,
+  /\bcommit\b/i,
+  /pull request/i,
+  /\bpr\b/i,
+  /\bpush\b/i,
+  /\bbranch\b/i,
+  /\bmerge\b/i,
+  /\brebase\b/i,
+  /\bcheckout\b/i,
+  /\bci\b/i,
+  /\bqa\b/i,
+  /\bdeploy\b/i,
+  /\bpublish\b/i,
+  /\bteste(s)?\b/i,
+  /\brodar teste(s)?\b/i,
+  /\brodar eval/i,
+  /\bcriar pr\b/i,
+  /\babrir pr\b/i,
+  /\bsubir branch\b/i,
+  /\bmergear\b/i,
+  /\bpublicar\b/i,
 ]
 
 const REVENUECAT_PATTERNS = [
@@ -88,6 +130,17 @@ const IMPLEMENT_PATTERNS = [
   /\bremove\b/i,
   /\bcreate\b/i,
   /\bpatch\b/i,
+  /\bcorrig/i,
+  /\bconsert/i,
+  /\bajust/i,
+  /\batualiz/i,
+  /\badicion/i,
+  /\bremov/i,
+  /\bcri(ar|e)\b/i,
+  /\bnao abre\b/i,
+  /\bn[aã]o abre\b/i,
+  /\bbug\b/i,
+  /\berro\b/i,
 ]
 
 function matchesAny(text: string, patterns: RegExp[]): boolean {
@@ -120,6 +173,7 @@ export default tool({
     const rca = matchesAny(text, RCA_PATTERNS)
     const gptReview = matchesAny(text, GPT_REVIEW_PATTERNS)
     const writing = matchesAny(text, WRITE_PATTERNS)
+    const operate = matchesAny(text, OPERATE_PATTERNS)
     const implementation = matchesAny(text, IMPLEMENT_PATTERNS)
     const revenuecat = matchesAny(text, REVENUECAT_PATTERNS)
     const reviewOnly = gptReview && !implementation
@@ -132,6 +186,11 @@ export default tool({
       route = "general"
       score = 4
       reasons.push("Multiple independent subtasks can run in parallel")
+    } else if (implementation && operate) {
+      route = "qwen-coder"
+      followUp = "qwen-operator"
+      score = 5
+      reasons.push("Task needs both code changes and repo operations, so implementation should be delegated before operational follow-through")
     } else if (largeContext && revenuecat) {
       route = "kimi-context"
       followUp = "revenuecat-agent"
@@ -164,6 +223,10 @@ export default tool({
       followUp = "qwen-coder"
       score = 5
       reasons.push("Task combines large context with contained implementation work")
+    } else if (operate) {
+      route = "qwen-operator"
+      score = 4
+      reasons.push("Task is primarily operational: tests, evals, git workflow, or PR work")
     } else if (largeContext) {
       route = "kimi-context"
       score = 4
@@ -190,6 +253,7 @@ export default tool({
     if (route === "glm-analyzer") hints.push("Use the Task/subagent flow with glm-analyzer and ask for root cause, evidence, fix options, and residual risks")
     if (route === "gpt-critic") hints.push("Use the Task/subagent flow with gpt-critic and ask for findings, key risks, judgment on the approach, and the most important improvement")
     if (route === "qwen-coder") hints.push("Use the Task/subagent flow with qwen-coder and ask for a focused implementation with verification on the touched path")
+    if (route === "qwen-operator") hints.push("Use the Task/subagent flow with qwen-operator for tests, evals, git operations, commits, pushes, and PR creation")
     if (route === "revenuecat-agent") hints.push("Use the Task/subagent flow with revenuecat-agent, use RevenueCat MCP tools directly, and avoid guessing subscription or offering state")
     if (route === "minimax-writer") hints.push("Use the Task/subagent flow with minimax-writer and ask for 3 to 5 strong alternatives ranked best first")
     if (route === "general") hints.push("Use the Task/subagent flow with general, split only truly independent subtasks, and integrate the results yourself")

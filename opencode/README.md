@@ -1,6 +1,6 @@
 # OpenCode
 
-Global OpenCode setup with a simple primary workflow, automatic routing to specialized subagents, and mandatory GPT review at the end of changed work.
+Global OpenCode setup with a primary orchestration workflow, automatic routing to specialized subagents, and mandatory GPT review at the end of changed work.
 
 ## Files
 
@@ -46,6 +46,26 @@ This setup intentionally isolates RevenueCat from the default `auto` toolset:
 - only `revenuecat-agent` can use them
 
 This keeps the default Kimi workflow stable while still making RevenueCat available through a dedicated specialist.
+
+## Model Roles In Practice
+
+- `Kimi 2.6`
+  - orchestrates
+  - reads context
+  - sequences the work
+  - integrates specialist outputs
+- `Qwen 3.6 Plus`
+  - writes code
+  - handles focused implementation work
+- `Qwen 3.5 Plus`
+  - handles repo operations
+  - tests, evals, commits, pushes, and PR creation
+- `GLM-5`
+  - investigates root causes and tradeoffs
+- `MiniMax M2.7`
+  - handles naming, rewrites, copy, and brainstorming
+- `GPT-5.4`
+  - reviews the final changed state
 
 ## Installation
 
@@ -148,7 +168,9 @@ That means:
 - ask to run tests, evals, commits, and PRs through `auto`
 - let `auto` decide when to call specialized subagents
 
-Use manual commands such as `/code`, `/rca`, `/ctx`, `/draft`, or `/judge` only when you explicitly want to force a path.
+In this setup, `auto` is orchestrator-first, not the default hands-on executor.
+
+Use manual commands such as `/code`, `/ops`, `/rca`, `/ctx`, `/draft`, `/revenuecat`, or `/judge` only when you explicitly want to force a path.
 
 ## Workflow Diagram
 
@@ -160,6 +182,8 @@ See [`WORKFLOW_DIAGRAM.md`](WORKFLOW_DIAGRAM.md) for the Mermaid version.
   - end-to-end implementation with the `auto` agent
 - `/code`
   - forces `qwen-coder` for focused coding work
+- `/ops`
+  - forces `qwen-operator` for tests, evals, commits, pushes, and PRs
 - `/rca`
   - forces `glm-analyzer` for root cause analysis
 - `/ctx`
@@ -180,11 +204,13 @@ The main and only agent that should be needed for day-to-day work.
 Responsibilities:
 
 - answer simple questions directly
-- execute normal repo tasks
-- run tests, evals, commits, and PRs
-- call subagents when the task stops being trivial
+- route non-trivial work to the right specialist
+- integrate specialist outputs
+- keep the overall workflow moving
 - always trigger `gpt-critic` once at the end of changed work before finishing
 - use `gpt-critic` as the first specialist only for review-only requests
+
+It is intentionally orchestration-first, not the default code-writing or git-driving agent.
 
 ### `qwen-coder`
 
@@ -195,6 +221,19 @@ Good for:
 - contained fixes
 - small to medium refactors
 - direct implementation
+
+### `qwen-operator`
+
+Used for operational repo work.
+
+Good for:
+
+- tests
+- evals
+- git status and diff checks
+- commits
+- pushes
+- PR creation
 
 ### `kimi-context`
 
@@ -276,6 +315,7 @@ Possible routes:
 - `gpt-critic`
 - `kimi-context`
 - `qwen-coder`
+- `qwen-operator`
 - `revenuecat-agent`
 - `minimax-writer`
 - `general`
@@ -287,6 +327,7 @@ Main heuristics:
 - review-only / final review request / high-stakes review -> `gpt-critic`
 - large context -> `kimi-context`
 - localized implementation -> `qwen-coder`
+- tests / evals / git / PR work -> `qwen-operator`
 - RevenueCat-specific work -> `revenuecat-agent`
 - writing / naming -> `minimax-writer`
 - parallel independent subtasks -> `general`
@@ -300,4 +341,4 @@ Main heuristics:
 
 In short: default to `auto`, and force a specialist only when you intentionally want manual control.
 
-Goal: simple UX for the user, strong specialization underneath.
+Goal: simple UX for the user, strong specialization underneath, and better OpenCode Go budget usage by keeping Kimi in the orchestrator role as much as possible.
