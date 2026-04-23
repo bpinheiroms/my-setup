@@ -1,6 +1,22 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "mcp": {},
+  "mcp": {
+    "revenuecat": {
+      "type": "remote",
+      "url": "https://mcp.revenuecat.ai/mcp",
+      "enabled": true
+    }
+  },
+  "tools": {
+    "revenuecat_*": false
+  },
+  "agent": {
+    "revenuecat-agent": {
+      "tools": {
+        "revenuecat_*": true
+      }
+    }
+  },
   "model": "opencode-go/kimi-k2.6",
   "small_model": "opencode-go/minimax-m2.5",
   "default_agent": "auto",
@@ -39,6 +55,13 @@
       "subtask": true,
       "model": "opencode-go/minimax-m2.7",
       "template": "Create 3 to 5 strong alternatives for: $ARGUMENTS\n\nOptimize for clarity, originality, and usefulness. Rank the best option first and explain tradeoffs briefly."
+    },
+    "revenuecat": {
+      "description": "RevenueCat MCP workflow",
+      "agent": "revenuecat-agent",
+      "subtask": true,
+      "model": "opencode-go/qwen3.5-plus",
+      "template": "Use RevenueCat MCP tools for this task: $ARGUMENTS\n\nPrefer MCP tool usage over guessing. Summarize what you found and any constraints."
     },
     "judge": {
       "description": "Second opinion or final review with GPT",

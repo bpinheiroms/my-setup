@@ -21,6 +21,7 @@ flowchart LR
     WR -->|qwen-coder| QC[qwen-coder<br/>Qwen 3.6 Plus<br/>focused implementation]
     WR -->|kimi-context| KC[kimi-context<br/>compress large context]
     WR -->|glm-analyzer| GA[glm-analyzer<br/>RCA / tradeoffs / risk]
+    WR -->|revenuecat-agent| RC[revenuecat-agent<br/>RevenueCat MCP specialist]
     WR -->|minimax-writer| MW[minimax-writer<br/>naming / rewrite / copy]
     WR -->|general| GE[general<br/>parallel subtasks]
     WR -->|review-only| GR[gpt-critic<br/>GPT-5.4<br/>review-only path]
@@ -29,6 +30,7 @@ flowchart LR
     QC --> A
     KC --> A
     GA --> A
+    RC --> A
     MW --> A
     GE --> A
     GR --> A
@@ -58,6 +60,7 @@ flowchart LR
     class QC code;
     class KC context;
     class GA analysis;
+    class RC context;
     class MW writing;
     class G,GR review;
     class EX,GE,FX neutral;
