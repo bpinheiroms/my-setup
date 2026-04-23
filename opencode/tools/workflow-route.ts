@@ -129,7 +129,6 @@ const REVENUECAT_PATTERNS = [
   /\bsubscription/i,
   /\bsubscriber/i,
   /\bcustomer info/i,
-  /\bpaywall/i,
   /\bproduct id/i,
   /\bpackage(s)?\b/i,
   /\bpurchase(s|d)?\b/i,
