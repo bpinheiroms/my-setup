@@ -19,6 +19,7 @@ flowchart LR
     WR -->|self| A
     WR -->|explore| EX[explore<br/>fast repo discovery]
     WR -->|qwen-coder| QC[qwen-coder<br/>Qwen 3.6 Plus<br/>focused implementation]
+    WR -->|qwen-operator| QO[qwen-operator<br/>Qwen 3.5 Plus<br/>tests / evals / git / PR]
     WR -->|kimi-context| KC[kimi-context<br/>compress large context]
     WR -->|glm-analyzer| GA[glm-analyzer<br/>RCA / tradeoffs / risk]
     WR -->|revenuecat-agent| RC[revenuecat-agent<br/>RevenueCat MCP specialist]
@@ -28,6 +29,7 @@ flowchart LR
 
     EX --> A
     QC --> A
+    QO --> A
     KC --> A
     GA --> A
     RC --> A
@@ -58,6 +60,7 @@ flowchart LR
     class A,D,E,F,R primary;
     class WR router;
     class QC code;
+    class QO code;
     class KC context;
     class GA analysis;
     class RC context;
