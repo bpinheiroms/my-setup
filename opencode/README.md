@@ -1,6 +1,6 @@
 # OpenCode
 
-Global OpenCode setup with a primary orchestration workflow, automatic routing to specialized subagents, and mandatory GPT review at the end of changed work.
+Global OpenCode setup with a primary orchestration workflow, automatic routing to specialized subagents, and a default GLM final review with GPT escalation only when needed.
 
 ## Files
 
@@ -62,10 +62,11 @@ This keeps the default Kimi workflow stable while still making RevenueCat availa
   - tests, evals, commits, pushes, and PR creation
 - `GLM-5`
   - investigates root causes and tradeoffs
+  - performs the default final review
 - `MiniMax M2.7`
   - handles naming, rewrites, copy, and brainstorming
 - `GPT-5.4`
-  - reviews the final changed state
+  - handles escalation review only
 
 ## Installation
 
@@ -170,7 +171,7 @@ That means:
 
 In this setup, `auto` is orchestrator-first, not the default hands-on executor.
 
-Use manual commands such as `/code`, `/ops`, `/rca`, `/ctx`, `/draft`, `/revenuecat`, or `/judge` only when you explicitly want to force a path.
+Use manual commands such as `/code`, `/ops`, `/rca`, `/review`, `/ctx`, `/draft`, `/revenuecat`, or `/judge` only when you explicitly want to force a path.
 
 ## Workflow Diagram
 
@@ -186,6 +187,8 @@ See [`WORKFLOW_DIAGRAM.md`](WORKFLOW_DIAGRAM.md) for the Mermaid version.
   - forces `qwen-operator` for tests, evals, commits, pushes, and PRs
 - `/rca`
   - forces `glm-analyzer` for root cause analysis
+- `/review`
+  - forces `glm-reviewer` for the default final review path
 - `/ctx`
   - forces `kimi-context` to summarize large context
 - `/draft`
@@ -207,8 +210,8 @@ Responsibilities:
 - route non-trivial work to the right specialist
 - integrate specialist outputs
 - keep the overall workflow moving
-- always trigger `gpt-critic` once at the end of changed work before finishing
-- use `gpt-critic` as the first specialist only for review-only requests
+- always trigger `glm-reviewer` once at the end of changed work before finishing
+- use `gpt-critic` only when escalation is needed or explicitly requested
 
 It is intentionally orchestration-first, not the default code-writing or git-driving agent.
 
@@ -257,6 +260,17 @@ Good for:
 - hard bugs
 - risk analysis
 
+### `glm-reviewer`
+
+Used as the default final reviewer for changed work.
+
+Good for:
+
+- final review of completed changes
+- correctness checks
+- regression spotting
+- merge-readiness review
+
 ### `minimax-writer`
 
 Used for language and alternatives.
@@ -270,14 +284,13 @@ Good for:
 
 ### `gpt-critic`
 
-Used as a strong reviewer, not as the default executor. It is also the mandatory final reviewer for changed work in this workflow.
+Used as a strong escalation reviewer, not as the default final reviewer.
 
 Good for:
 
-- mandatory final review after changed work is complete
 - second opinions
-- final review before answering
 - security / migration / release checks
+- payments / billing / RevenueCat-critical review
 - tie-breaking between good approaches
 
 ### `revenuecat-agent`
@@ -312,6 +325,7 @@ Possible routes:
 - `self`
 - `explore`
 - `glm-analyzer`
+- `glm-reviewer`
 - `gpt-critic`
 - `kimi-context`
 - `qwen-coder`
@@ -324,7 +338,8 @@ Main heuristics:
 
 - search / repo navigation -> `explore`
 - RCA / tradeoff / architecture -> `glm-analyzer`
-- review-only / final review request / high-stakes review -> `gpt-critic`
+- default review-only / final review -> `glm-reviewer`
+- GPT only on escalation or explicit premium review
 - large context -> `kimi-context`
 - localized implementation -> `qwen-coder`
 - tests / evals / git / PR work -> `qwen-operator`

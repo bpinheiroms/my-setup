@@ -42,6 +42,13 @@
       "model": "opencode-go/glm-5",
       "template": "Investigate this problem deeply: $ARGUMENTS\n\nReturn:\n- most likely root cause\n- strongest evidence\n- minimal fix\n- validation plan\n- residual risks"
     },
+    "review": {
+      "description": "Default final review with GLM",
+      "agent": "glm-reviewer",
+      "subtask": true,
+      "model": "opencode-go/glm-5",
+      "template": "Review this completed work carefully: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the single most important improvement\n- confidence level\n- whether GPT escalation is needed"
+    },
     "ctx": {
       "description": "Long-context synthesis with Kimi",
       "agent": "kimi-context",

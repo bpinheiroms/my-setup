@@ -4,6 +4,7 @@ type Route =
   | "self"
   | "explore"
   | "glm-analyzer"
+  | "glm-reviewer"
   | "gpt-critic"
   | "kimi-context"
   | "qwen-coder"
@@ -47,13 +48,22 @@ const RCA_PATTERNS = [
   /revis[aã]o de c[oó]digo/i,
 ]
 
-const GPT_REVIEW_PATTERNS = [
+const REVIEW_PATTERNS = [
   /second opinion/i,
   /final review/i,
   /double check/i,
   /sanity check/i,
-  /judge/i,
   /adversarial review/i,
+  /review\b/i,
+  /judge/i,
+  /segunda opini[aã]o/i,
+  /revis[aã]o final/i,
+  /revis[aã]o/i,
+  /confere/i,
+  /valida/i,
+]
+
+const GPT_ESCALATION_PATTERNS = [
   /tie[- ]?break/i,
   /high[- ]stakes/i,
   /production/i,
@@ -64,6 +74,11 @@ const GPT_REVIEW_PATTERNS = [
   /go[- ]live/i,
   /release/i,
   /launch/i,
+  /payment/i,
+  /billing/i,
+  /iap/i,
+  /finance/i,
+  /payments/i,
 ]
 
 const WRITE_PATTERNS = [
@@ -171,12 +186,13 @@ export default tool({
     const largeContext = Boolean(args.hasLongLogs || args.hasLargeDiff || args.hasLargeSpec || fileCount >= 8)
     const search = matchesAny(text, SEARCH_PATTERNS)
     const rca = matchesAny(text, RCA_PATTERNS)
-    const gptReview = matchesAny(text, GPT_REVIEW_PATTERNS)
+    const review = matchesAny(text, REVIEW_PATTERNS)
+    const gptEscalation = matchesAny(text, GPT_ESCALATION_PATTERNS)
     const writing = matchesAny(text, WRITE_PATTERNS)
     const operate = matchesAny(text, OPERATE_PATTERNS)
     const implementation = matchesAny(text, IMPLEMENT_PATTERNS)
     const revenuecat = matchesAny(text, REVENUECAT_PATTERNS)
-    const reviewOnly = gptReview && !implementation
+    const reviewOnly = review && !implementation
 
     let route: Route = "self"
     let followUp: Route | undefined
@@ -186,6 +202,16 @@ export default tool({
       route = "general"
       score = 4
       reasons.push("Multiple independent subtasks can run in parallel")
+    } else if (reviewOnly && revenuecat) {
+      route = "revenuecat-agent"
+      followUp = "glm-reviewer"
+      score = 5
+      reasons.push("Task is review-only and RevenueCat-specific, so gather domain facts first and then run the default GLM review")
+    } else if (reviewOnly && gptEscalation) {
+      route = "glm-reviewer"
+      followUp = "gpt-critic"
+      score = 5
+      reasons.push("Task is review-only and high-stakes, so it should start with GLM review and escalate to GPT if needed")
     } else if (implementation && operate) {
       route = "qwen-coder"
       followUp = "qwen-operator"
@@ -202,13 +228,13 @@ export default tool({
       reasons.push("Task is RevenueCat-specific and should use MCP tools through the dedicated agent")
     } else if (largeContext && reviewOnly) {
       route = "kimi-context"
-      followUp = "gpt-critic"
+      followUp = "glm-reviewer"
       score = 5
-      reasons.push("Task combines large context with a requested second opinion or high-stakes review")
+      reasons.push("Task combines large context with a requested review and should be compressed before GLM review")
     } else if (reviewOnly) {
-      route = "gpt-critic"
-      score = 5
-      reasons.push("Task asks for review-only work: second opinion, final review, or high-stakes decision check")
+      route = "glm-reviewer"
+      score = 4
+      reasons.push("Task asks for review-only work and should use the default GLM reviewer")
     } else if (writing) {
       route = "minimax-writer"
       score = 4
@@ -251,7 +277,8 @@ export default tool({
     if (route === "explore") hints.push("Use the Task/subagent flow with explore to gather file locations and quick evidence before continuing")
     if (route === "kimi-context") hints.push("Use the Task/subagent flow with kimi-context and ask for a compressed summary, key facts, gaps, and next steps")
     if (route === "glm-analyzer") hints.push("Use the Task/subagent flow with glm-analyzer and ask for root cause, evidence, fix options, and residual risks")
-    if (route === "gpt-critic") hints.push("Use the Task/subagent flow with gpt-critic and ask for findings, key risks, judgment on the approach, and the most important improvement")
+    if (route === "glm-reviewer") hints.push("Use the Task/subagent flow with glm-reviewer and ask for findings, confidence level, and whether GPT escalation is needed")
+    if (route === "gpt-critic") hints.push("Use the Task/subagent flow with gpt-critic only as escalation or explicit premium review")
     if (route === "qwen-coder") hints.push("Use the Task/subagent flow with qwen-coder and ask for a focused implementation with verification on the touched path")
     if (route === "qwen-operator") hints.push("Use the Task/subagent flow with qwen-operator for tests, evals, git operations, commits, pushes, and PR creation")
     if (route === "revenuecat-agent") hints.push("Use the Task/subagent flow with revenuecat-agent, use RevenueCat MCP tools directly, and avoid guessing subscription or offering state")
