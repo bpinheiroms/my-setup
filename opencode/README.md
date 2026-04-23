@@ -8,6 +8,7 @@ Global OpenCode setup with a simple primary workflow, automatic routing to speci
   - main config
   - default model
   - custom commands
+  - MCP server definitions
 - `AGENTS.md`
   - global communication rule set in ultra-terse mode
 - `agents/`
@@ -26,6 +27,18 @@ Global OpenCode setup with a simple primary workflow, automatic routing to speci
 - default model: `opencode-go/kimi-k2.6`
 - `small_model`: `opencode-go/minimax-m2.5`
 - default agent: `auto`
+
+## Configured MCP Servers
+
+### `revenuecat`
+
+- type: `remote`
+- url: `https://mcp.revenuecat.ai/mcp`
+- enabled: `true`
+
+This repository stores the MCP server entry, not the secret key used to authenticate against RevenueCat.
+
+If authentication is required on a new machine, complete it locally after restoring the OpenCode config.
 
 ## Installation
 
@@ -71,6 +84,7 @@ cd ~/.config/opencode && npm install
 - `plugins/`
 - `tools/`
 - local package dependency for `@opencode-ai/plugin`
+- configured MCP server definitions from `opencode.json`
 
 ### Verify The Setup
 
@@ -86,6 +100,20 @@ Expected result:
 - default agent is `auto`
 - main model is `opencode-go/kimi-k2.6`
 - the custom agents are visible in resolved config
+- the `revenuecat` MCP server appears in the resolved config
+
+### MCP Authentication Notes
+
+RevenueCat is configured here as a remote MCP server.
+
+If the server requires authentication on your machine, use the local OpenCode MCP flow after restoring the config:
+
+```bash
+opencode mcp list
+opencode mcp auth revenuecat
+```
+
+If you are using API-key-based authentication instead of OAuth, keep the key out of the repository and configure it only on the local machine.
 
 ### Updating An Existing Setup
 
