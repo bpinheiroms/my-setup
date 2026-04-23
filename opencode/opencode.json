@@ -1,0 +1,64 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {},
+  "model": "opencode-go/kimi-k2.6",
+  "small_model": "opencode-go/minimax-m2.5",
+  "default_agent": "auto",
+  "compaction": {
+    "auto": true,
+    "prune": true,
+    "reserved": 16000
+  },
+  "watcher": {
+    "ignore": [
+      ".git/**",
+      "node_modules/**",
+      ".turbo/**",
+      "dist/**",
+      "build/**"
+    ]
+  },
+  "command": {
+    "rca": {
+      "description": "Deep root cause analysis with GLM",
+      "agent": "glm-analyzer",
+      "subtask": true,
+      "model": "opencode-go/glm-5",
+      "template": "Investigate this problem deeply: $ARGUMENTS\n\nReturn:\n- most likely root cause\n- strongest evidence\n- minimal fix\n- validation plan\n- residual risks"
+    },
+    "ctx": {
+      "description": "Long-context synthesis with Kimi",
+      "agent": "kimi-context",
+      "subtask": true,
+      "model": "opencode-go/kimi-k2.6",
+      "template": "Process this large context and compress it for action: $ARGUMENTS\n\nReturn:\n- concise summary\n- critical facts\n- open questions\n- recommended next steps"
+    },
+    "draft": {
+      "description": "Naming, rewrites, and alternatives with MiniMax",
+      "agent": "minimax-writer",
+      "subtask": true,
+      "model": "opencode-go/minimax-m2.7",
+      "template": "Create 3 to 5 strong alternatives for: $ARGUMENTS\n\nOptimize for clarity, originality, and usefulness. Rank the best option first and explain tradeoffs briefly."
+    },
+    "judge": {
+      "description": "Second opinion or final review with GPT",
+      "agent": "gpt-critic",
+      "subtask": true,
+      "model": "openai/gpt-5.4",
+      "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
+    },
+    "code": {
+      "description": "Fast coding pass with Qwen",
+      "agent": "qwen-coder",
+      "subtask": true,
+      "model": "opencode-go/qwen3.6-plus",
+      "template": "Implement this coding task quickly and precisely: $ARGUMENTS\n\nFavor strong code edits, focused diffs, and direct verification. Avoid broad planning unless needed."
+    },
+    "ship": {
+      "description": "Implementation workflow with auto orchestration",
+      "agent": "auto",
+      "model": "opencode-go/kimi-k2.6",
+      "template": "Implement this task end-to-end: $ARGUMENTS\n\nRead the codebase first, prefer the smallest correct change, verify results, and summarize what changed."
+    }
+  }
+}

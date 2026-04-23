@@ -1,0 +1,23 @@
+[
+  {
+    "context": "Terminal",
+    "bindings": {
+      "shift-enter": [
+        "terminal::SendText",
+        "\u001b\r"
+      ],
+      "ctrl-a": null,
+      "ctrl-s": null,
+      "ctrl-d": null,
+      "ctrl-e": null,
+      "ctrl-z": null,
+      "ctrl-x": null,
+      "ctrl-f": null
+    }
+  },
+  {
+    "bindings": {
+      "cmd-shift-e": "project_panel::Toggle"
+    }
+  }
+]
