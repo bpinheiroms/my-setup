@@ -74,7 +74,6 @@
       "description": "Second opinion or final review with GPT",
       "agent": "gpt-critic",
       "subtask": true,
-      "model": "openai/gpt-5.4",
       "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
     },
     "code": {
