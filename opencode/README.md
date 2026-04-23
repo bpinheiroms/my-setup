@@ -68,6 +68,40 @@ This keeps the default Kimi workflow stable while still making RevenueCat availa
 - `GPT-5.4`
   - handles escalation review only
 
+## Actual Runtime Decision Tree
+
+In normal usage, this is the practical decision tree:
+
+- simple question
+  - `auto` answers directly
+- repo discovery or file lookup
+  - `explore`
+- root cause analysis, tradeoffs, risk investigation
+  - `glm-analyzer`
+- focused code changes
+  - `qwen-coder`
+- tests, evals, git operations, commit, push, PR
+  - `qwen-operator`
+- large logs, large diffs, large specs, heavy context compression
+  - `kimi-context`
+- naming, copy, rewrite, brainstorming
+  - `minimax-writer`
+- RevenueCat-specific work
+  - `revenuecat-agent`
+- final review of completed changed work
+  - `glm-reviewer`
+- high-risk or low-confidence final review escalation
+  - `gpt-critic`
+
+Combined flows usually look like this:
+
+- code change + repo ops
+  - `qwen-coder` -> `qwen-operator` -> `glm-reviewer`
+- large-context bug
+  - `kimi-context` -> `glm-analyzer` -> `qwen-coder` -> `qwen-operator` -> `glm-reviewer`
+- payments / RevenueCat / billing
+  - `revenuecat-agent` or `kimi-context` -> `glm-reviewer` -> `gpt-critic` if escalation is needed
+
 ## Installation
 
 This repository stores the OpenCode configuration, not the OpenCode binary itself.
