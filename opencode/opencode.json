@@ -18,7 +18,7 @@
     }
   },
   "model": "opencode-go/kimi-k2.6",
-  "small_model": "opencode-go/minimax-m2.5",
+  "small_model": "opencode-go/deepseek-v4-flash",
   "default_agent": "auto",
   "compaction": {
     "auto": true,
@@ -74,6 +74,7 @@
       "description": "Second opinion or final review with GPT",
       "agent": "gpt-critic",
       "subtask": true,
+      "model": "openai/gpt-5.4",
       "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
     },
     "code": {
@@ -84,10 +85,10 @@
       "template": "Implement this coding task quickly and precisely: $ARGUMENTS\n\nFavor strong code edits, focused diffs, and direct verification. Avoid broad planning unless needed."
     },
     "ops": {
-      "description": "Run tests, evals, and git workflows with Qwen",
+      "description": "Run tests, evals, and git workflows with DeepSeek",
       "agent": "qwen-operator",
       "subtask": true,
-      "model": "opencode-go/qwen3.5-plus",
+      "model": "opencode-go/deepseek-v4-flash",
       "template": "Handle the repo operations for this task: $ARGUMENTS\n\nFocus on tests, evals, git operations, commits, pushes, and PR creation. Do not make code edits unless explicitly told to switch back to a coding agent."
     },
     "ship": {
