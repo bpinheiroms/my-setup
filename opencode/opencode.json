@@ -86,14 +86,14 @@
     },
     "code": {
       "description": "Fast coding pass with MiMo Pro",
-      "agent": "qwen-coder",
+      "agent": "mimo-coder",
       "subtask": true,
       "model": "opencode-go/mimo-v2.5-pro",
       "template": "Implement this coding task quickly and precisely: $ARGUMENTS\n\nTreat parent instructions and scope as binding unless repo evidence proves they are wrong. Prefer the smallest literal implementation, focused diffs, and direct verification. Do not broaden scope or redesign unless necessary."
     },
     "ops": {
       "description": "Run tests, evals, and git workflows with DeepSeek",
-      "agent": "qwen-operator",
+      "agent": "deepseek-operator",
       "subtask": true,
       "model": "opencode-go/deepseek-v4-flash",
       "template": "Handle the repo operations for this task: $ARGUMENTS\n\nFocus on tests, evals, git operations, commits, pushes, and PR creation. Do not make code edits unless explicitly told to switch back to a coding agent."
