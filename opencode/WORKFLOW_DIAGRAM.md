@@ -18,8 +18,8 @@ flowchart LR
 
     WR -->|self| A
     WR -->|explore| EX[explore<br/>fast repo discovery]
-    WR -->|qwen-coder| QC[qwen-coder<br/>Qwen 3.6 Plus<br/>focused implementation]
-    WR -->|qwen-operator| QO[qwen-operator<br/>Qwen 3.5 Plus<br/>tests / evals / git / PR]
+    WR -->|qwen-coder| QC[qwen-coder<br/>MiMo v2.5 Pro<br/>focused implementation]
+    WR -->|qwen-operator| QO[qwen-operator<br/>DeepSeek V4 Flash<br/>tests / evals / git / PR]
     WR -->|kimi-context| KC[kimi-context<br/>compress large context]
     WR -->|glm-analyzer| GA[glm-analyzer<br/>RCA / tradeoffs / risk]
     WR -->|glm-reviewer| GV[glm-reviewer<br/>GLM-5<br/>default final review]
