@@ -8,8 +8,8 @@ type Route =
   | "glm-reviewer"
   | "gpt-critic"
   | "kimi-context"
-  | "qwen-coder"
-  | "qwen-operator"
+  | "mimo-coder"
+  | "deepseek-operator"
   | "revenuecat-agent"
   | "minimax-writer"
   | "general"
@@ -229,7 +229,7 @@ export default tool({
       reasons.push("Task is implementation work with known large scope and heavy context, so compress the context before producing a binding GPT plan")
     } else if (knownLargeImplementation) {
       route = "gpt-planner"
-      followUp = "qwen-coder"
+      followUp = "mimo-coder"
       score = 5
       reasons.push("Task is implementation work with known large scope, so it should get an explicit GPT plan before execution")
     } else if (unknownImplementationScope) {
@@ -237,12 +237,12 @@ export default tool({
       score = 4
       reasons.push("Task needs code changes but the real scope is not known yet, so measure it from repo evidence before choosing direct execution or GPT planning")
     } else if (containedImplementation && operate) {
-      route = "qwen-coder"
-      followUp = "qwen-operator"
+      route = "mimo-coder"
+      followUp = "deepseek-operator"
       score = 5
       reasons.push("Task is contained implementation work with repo operations, so implement first and then hand off operational follow-through")
     } else if (containedImplementation) {
-      route = "qwen-coder"
+      route = "mimo-coder"
       score = 4
       reasons.push("Task is contained implementation work with scope already measured from repo evidence")
     } else if (largeContext && revenuecat) {
@@ -273,7 +273,7 @@ export default tool({
       score = 5
       reasons.push("Task combines large context with root cause or tradeoff analysis")
     } else if (operate) {
-      route = "qwen-operator"
+      route = "deepseek-operator"
       score = 4
       reasons.push("Task is primarily operational: tests, evals, git workflow, or PR work")
     } else if (largeContext) {
@@ -297,17 +297,17 @@ export default tool({
     if (route === "explore" && implementation)
       hints.push("For implementation triage, ask explore for touched files, rough file count, boundary or public API impact, state or cache impact, navigation or schema impact, and a contained-vs-high-impact recommendation. Then rerun workflow-route with scopeKnown=true and the measured signals")
     if (route === "kimi-context") hints.push("Use the Task/subagent flow with kimi-context and ask for a compressed summary, key facts, gaps, and next steps")
-    if (route === "gpt-planner") hints.push("Use the Task/subagent flow with gpt-planner and ask for scope, invariants, touched files, ordered steps, risks, and a validation checklist. Then hand the plan to qwen-coder as binding execution scope")
+    if (route === "gpt-planner") hints.push("Use the Task/subagent flow with gpt-planner and ask for scope, invariants, touched files, ordered steps, risks, and a validation checklist. Then hand the plan to mimo-coder as binding execution scope")
     if (route === "glm-analyzer") hints.push("Use the Task/subagent flow with glm-analyzer and ask for root cause, evidence, fix options, and residual risks")
     if (route === "glm-reviewer") hints.push("Use the Task/subagent flow with glm-reviewer and ask for findings, confidence level, and whether GPT escalation is needed")
     if (route === "gpt-critic") hints.push("Use the Task/subagent flow with gpt-critic only as escalation or explicit premium review")
-    if (route === "qwen-coder") hints.push("Use the Task/subagent flow with qwen-coder and ask for a focused implementation with verification on the touched path")
-    if (route === "qwen-operator") hints.push("Use the Task/subagent flow with qwen-operator for tests, evals, git operations, commits, pushes, and PR creation")
+    if (route === "mimo-coder") hints.push("Use the Task/subagent flow with mimo-coder and ask for a focused implementation with verification on the touched path")
+    if (route === "deepseek-operator") hints.push("Use the Task/subagent flow with deepseek-operator for tests, evals, git operations, commits, pushes, and PR creation")
     if (route === "revenuecat-agent") hints.push("Use the Task/subagent flow with revenuecat-agent, use RevenueCat MCP tools directly, and avoid guessing subscription or offering state")
     if (route === "minimax-writer") hints.push("Use the Task/subagent flow with minimax-writer and ask for 3 to 5 strong alternatives ranked best first")
     if (route === "general") hints.push("Use the Task/subagent flow with general, split only truly independent subtasks, and integrate the results yourself")
     if (followUp) hints.push(`After ${route}, continue with ${followUp}`)
-    if (implementation && operate) hints.push("After the implementation path finishes code changes, continue with qwen-operator for tests, git workflow, and PR work when needed")
+    if (implementation && operate) hints.push("After the implementation path finishes code changes, continue with deepseek-operator for tests, git workflow, and PR work when needed")
     if (implementation) hints.push("If files change, run the mandatory glm-reviewer review at the end, not at the start")
 
     return JSON.stringify(

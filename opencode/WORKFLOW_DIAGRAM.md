@@ -18,8 +18,8 @@ flowchart LR
 
     WR -->|self| A
     WR -->|explore| EX[explore<br/>repo discovery / implementation triage]
-    WR -->|qwen-coder| QC[qwen-coder<br/>MiMo v2.5 Pro<br/>focused code / contained implementation]
-    WR -->|qwen-operator| QO[qwen-operator<br/>DeepSeek V4 Flash<br/>tests / evals / git / PR]
+    WR -->|mimo-coder| QC[mimo-coder<br/>MiMo v2.5 Pro<br/>focused code / contained implementation]
+    WR -->|deepseek-operator| QO[deepseek-operator<br/>DeepSeek V4 Flash<br/>tests / evals / git / PR]
     WR -->|kimi-context| KC[kimi-context<br/>compress large context]
     WR -->|gpt-planner| PL[gpt-planner<br/>GPT-5.4<br/>large implementation plan]
     WR -->|glm-analyzer| GA[glm-analyzer<br/>RCA / tradeoffs / risk]

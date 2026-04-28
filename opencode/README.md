@@ -81,13 +81,13 @@ In normal usage, this is the practical decision tree:
 - root cause analysis, tradeoffs, risk investigation
   - `glm-analyzer`
 - focused code changes and contained implementation work
-  - `qwen-coder`
+  - `mimo-coder`
 - implementation with unclear scope
   - `explore`
 - large or high-impact implementation planning
   - `gpt-planner`
 - tests, evals, git operations, commit, push, PR
-  - `qwen-operator`
+  - `deepseek-operator`
 - large logs, large diffs, large specs, heavy context compression
   - `kimi-context`
 - naming, copy, rewrite, brainstorming
@@ -102,13 +102,13 @@ In normal usage, this is the practical decision tree:
 Combined flows usually look like this:
 
 - code change + repo ops
-  - `qwen-coder` -> `qwen-operator` -> `glm-reviewer`
+  - `mimo-coder` -> `deepseek-operator` -> `glm-reviewer`
 - contained implementation change
-  - `explore` -> `qwen-coder` -> `qwen-operator` when needed -> `glm-reviewer`
+  - `explore` -> `mimo-coder` -> `deepseek-operator` when needed -> `glm-reviewer`
 - large implementation or high-impact change
-  - `explore` -> `gpt-planner`, or `kimi-context` -> `gpt-planner` when the context is already large -> `qwen-coder` -> `qwen-operator` when needed -> `glm-reviewer` -> `gpt-critic` only if escalation is needed
+  - `explore` -> `gpt-planner`, or `kimi-context` -> `gpt-planner` when the context is already large -> `mimo-coder` -> `deepseek-operator` when needed -> `glm-reviewer` -> `gpt-critic` only if escalation is needed
 - large-context bug
-  - `kimi-context` -> `glm-analyzer` -> `qwen-coder` -> `qwen-operator` -> `glm-reviewer`
+  - `kimi-context` -> `glm-analyzer` -> `mimo-coder` -> `deepseek-operator` -> `glm-reviewer`
 - payments / RevenueCat / billing
   - `revenuecat-agent` or `kimi-context` -> `glm-reviewer` -> `gpt-critic` if escalation is needed
 
@@ -226,9 +226,9 @@ See [`WORKFLOW_DIAGRAM.md`](WORKFLOW_DIAGRAM.md) for the Mermaid version.
 - `/ship`
   - end-to-end implementation with the `auto` agent
 - `/code`
-  - forces `qwen-coder` for focused coding work
+  - forces `mimo-coder` for focused coding work
 - `/ops`
-  - forces `qwen-operator` for tests, evals, commits, pushes, and PRs
+  - forces `deepseek-operator` for tests, evals, commits, pushes, and PRs
 - `/rca`
   - forces `glm-analyzer` for root cause analysis
 - `/review`
@@ -261,7 +261,7 @@ Responsibilities:
 
 It is intentionally orchestration-first, not the default code-writing or git-driving agent.
 
-### `qwen-coder`
+### `mimo-coder`
 
 Used when the scope is clear and the work is localized code implementation.
 
@@ -282,9 +282,9 @@ Good for:
 - architecture and boundary changes
 - shared contract moves
 - cache, store, navigation, schema, or migration-sensitive work
-- producing a binding execution plan for `qwen-coder`
+- producing a binding execution plan for `mimo-coder`
 
-### `qwen-operator`
+### `deepseek-operator`
 
 Used for operational repo work.
 
@@ -393,8 +393,8 @@ Possible routes:
 - `glm-reviewer`
 - `gpt-critic`
 - `kimi-context`
-- `qwen-coder`
-- `qwen-operator`
+- `mimo-coder`
+- `deepseek-operator`
 - `revenuecat-agent`
 - `minimax-writer`
 - `general`
@@ -409,8 +409,8 @@ Main heuristics:
 - large or high-impact implementation with known scope -> `gpt-planner`, or `kimi-context` -> `gpt-planner` when the context is heavy
 - GPT only on escalation or explicit premium review
 - large context -> `kimi-context`
-- localized implementation and contained implementation work -> `qwen-coder`
-- tests / evals / git / PR work -> `qwen-operator`
+- localized implementation and contained implementation work -> `mimo-coder`
+- tests / evals / git / PR work -> `deepseek-operator`
 - RevenueCat-specific work -> `revenuecat-agent`
 - writing / naming -> `minimax-writer`
 - parallel independent subtasks -> `general`
