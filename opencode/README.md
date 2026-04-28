@@ -25,7 +25,7 @@ Global OpenCode setup with a primary orchestration workflow, automatic routing t
 ## Primary Model
 
 - default model: `opencode-go/kimi-k2.6`
-- `small_model`: `opencode-go/minimax-m2.5`
+- `small_model`: `opencode-go/deepseek-v4-flash`
 - default agent: `auto`
 
 ## Configured MCP Servers
@@ -54,10 +54,10 @@ This keeps the default Kimi workflow stable while still making RevenueCat availa
   - reads context
   - sequences the work
   - integrates specialist outputs
-- `Qwen 3.6 Plus`
+- `MiMo v2.5 Pro`
   - writes code
   - handles focused implementation work
-- `Qwen 3.5 Plus`
+- `DeepSeek V4 Flash`
   - handles repo operations
   - tests, evals, commits, pushes, and PR creation
 - `GLM-5`

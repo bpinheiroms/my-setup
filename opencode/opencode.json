@@ -78,11 +78,11 @@
       "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
     },
     "code": {
-      "description": "Fast coding pass with Qwen",
+      "description": "Fast coding pass with MiMo Pro",
       "agent": "qwen-coder",
       "subtask": true,
-      "model": "opencode-go/qwen3.6-plus",
-      "template": "Implement this coding task quickly and precisely: $ARGUMENTS\n\nFavor strong code edits, focused diffs, and direct verification. Avoid broad planning unless needed."
+      "model": "opencode-go/mimo-v2.5-pro",
+      "template": "Implement this coding task quickly and precisely: $ARGUMENTS\n\nTreat parent instructions and scope as binding unless repo evidence proves they are wrong. Prefer the smallest literal implementation, focused diffs, and direct verification. Do not broaden scope or redesign unless necessary."
     },
     "ops": {
       "description": "Run tests, evals, and git workflows with DeepSeek",
