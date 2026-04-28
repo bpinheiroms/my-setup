@@ -17,27 +17,29 @@ flowchart LR
     T -->|No| WR[workflow-route<br/>deterministic task router]
 
     WR -->|self| A
-    WR -->|explore| EX[explore<br/>fast repo discovery]
-    WR -->|qwen-coder| QC[qwen-coder<br/>MiMo v2.5 Pro<br/>focused implementation]
+    WR -->|explore| EX[explore<br/>repo discovery / implementation triage]
+    WR -->|qwen-coder| QC[qwen-coder<br/>MiMo v2.5 Pro<br/>focused code / contained implementation]
     WR -->|qwen-operator| QO[qwen-operator<br/>DeepSeek V4 Flash<br/>tests / evals / git / PR]
     WR -->|kimi-context| KC[kimi-context<br/>compress large context]
+    WR -->|gpt-planner| PL[gpt-planner<br/>GPT-5.4<br/>large implementation plan]
     WR -->|glm-analyzer| GA[glm-analyzer<br/>RCA / tradeoffs / risk]
     WR -->|glm-reviewer| GV[glm-reviewer<br/>GLM-5<br/>default final review]
     WR -->|revenuecat-agent| RC[revenuecat-agent<br/>RevenueCat MCP specialist]
     WR -->|minimax-writer| MW[minimax-writer<br/>naming / rewrite / copy]
     WR -->|general| GE[general<br/>parallel subtasks]
-    WR -->|escalation review| GR[gpt-critic<br/>GPT-5.4<br/>escalation-only path]
+    WR -->|escalation review| CR[gpt-critic<br/>GPT-5.4<br/>escalation-only path]
 
     EX --> A
     QC --> A
     QO --> A
     KC --> A
+    PL --> A
     GA --> A
     GV --> A
     RC --> A
     MW --> A
     GE --> A
-    GR --> A
+    CR --> A
 
     A --> E[auto continues execution<br/>tests / evals / final state]
     E --> C{Did final state change files?}
@@ -68,11 +70,12 @@ flowchart LR
     class QC code;
     class QO code;
     class KC context;
+    class PL review;
     class GA analysis;
     class GV analysis;
     class RC context;
     class MW writing;
-    class G,GP,GR review;
+    class G,GP,CR review;
     class EX,GE,FX neutral;
 ```
 
@@ -81,6 +84,8 @@ flowchart LR
 - The user talks only to `auto`.
 - `auto` handles simple work directly.
 - `workflow-route` decides which specialist to call for non-trivial work.
+- Implementation work with unclear scope goes through `explore` first so sizing comes from repo evidence, not wording alone.
+- Large implementation work can go through `kimi-context` and `gpt-planner` before code execution starts.
 - Specialists return control back to `auto`.
 - If the final state changed files, `glm-reviewer` reviews the completed result first.
 - `gpt-critic` is used only when escalation is needed.
