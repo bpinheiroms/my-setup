@@ -1,6 +1,6 @@
 # OpenCode
 
-Global OpenCode setup with a primary orchestration workflow, automatic routing to specialized subagents, and a default GLM final review with GPT escalation only when needed.
+Global OpenCode setup with a primary orchestration workflow, automatic routing to specialized subagents, GPT planning for large implementation work, and a default GLM final review with GPT escalation only when needed.
 
 ## Files
 
@@ -56,7 +56,7 @@ This keeps the default Kimi workflow stable while still making RevenueCat availa
   - integrates specialist outputs
 - `MiMo v2.5 Pro`
   - writes code
-  - handles focused implementation work
+  - handles focused implementation work and contained code changes
 - `DeepSeek V4 Flash`
   - handles repo operations
   - tests, evals, commits, pushes, and PR creation
@@ -66,7 +66,8 @@ This keeps the default Kimi workflow stable while still making RevenueCat availa
 - `MiniMax M2.7`
   - handles naming, rewrites, copy, and brainstorming
 - `GPT-5.4`
-  - handles escalation review only
+  - plans large or high-impact implementation work before execution
+  - handles escalation review after GLM when needed
   - runs at `reasoningEffort: medium`
 
 ## Actual Runtime Decision Tree
@@ -79,8 +80,12 @@ In normal usage, this is the practical decision tree:
   - `explore`
 - root cause analysis, tradeoffs, risk investigation
   - `glm-analyzer`
-- focused code changes
+- focused code changes and contained implementation work
   - `qwen-coder`
+- implementation with unclear scope
+  - `explore`
+- large or high-impact implementation planning
+  - `gpt-planner`
 - tests, evals, git operations, commit, push, PR
   - `qwen-operator`
 - large logs, large diffs, large specs, heavy context compression
@@ -98,6 +103,10 @@ Combined flows usually look like this:
 
 - code change + repo ops
   - `qwen-coder` -> `qwen-operator` -> `glm-reviewer`
+- contained implementation change
+  - `explore` -> `qwen-coder` -> `qwen-operator` when needed -> `glm-reviewer`
+- large implementation or high-impact change
+  - `explore` -> `gpt-planner`, or `kimi-context` -> `gpt-planner` when the context is already large -> `qwen-coder` -> `qwen-operator` when needed -> `glm-reviewer` -> `gpt-critic` only if escalation is needed
 - large-context bug
   - `kimi-context` -> `glm-analyzer` -> `qwen-coder` -> `qwen-operator` -> `glm-reviewer`
 - payments / RevenueCat / billing
@@ -206,7 +215,7 @@ That means:
 
 In this setup, `auto` is orchestrator-first, not the default hands-on executor.
 
-Use manual commands such as `/code`, `/ops`, `/rca`, `/review`, `/ctx`, `/draft`, `/revenuecat`, or `/judge` only when you explicitly want to force a path.
+Use manual commands such as `/code`, `/ops`, `/rca`, `/review`, `/ctx`, `/plan`, `/draft`, `/revenuecat`, or `/judge` only when you explicitly want to force a path.
 
 ## Workflow Diagram
 
@@ -226,6 +235,8 @@ See [`WORKFLOW_DIAGRAM.md`](WORKFLOW_DIAGRAM.md) for the Mermaid version.
   - forces `glm-reviewer` for the default final review path
 - `/ctx`
   - forces `kimi-context` to summarize large context
+- `/plan`
+  - forces `gpt-planner` to create a large-implementation execution plan
 - `/draft`
   - forces `minimax-writer` for text, naming, and brainstorming
 - `/revenuecat`
@@ -257,8 +268,21 @@ Used when the scope is clear and the work is localized code implementation.
 Good for:
 
 - contained fixes
-- small to medium refactors
+- contained implementation work after quick repo triage
 - direct implementation
+
+### `gpt-planner`
+
+Used when implementation work is large or high-impact enough that planning quality matters more than raw execution speed.
+
+Good for:
+
+- multi-file implementation work
+- broad implementation tasks
+- architecture and boundary changes
+- shared contract moves
+- cache, store, navigation, schema, or migration-sensitive work
+- producing a binding execution plan for `qwen-coder`
 
 ### `qwen-operator`
 
@@ -364,6 +388,7 @@ Possible routes:
 
 - `self`
 - `explore`
+- `gpt-planner`
 - `glm-analyzer`
 - `glm-reviewer`
 - `gpt-critic`
@@ -377,11 +402,14 @@ Possible routes:
 Main heuristics:
 
 - search / repo navigation -> `explore`
+- implementation with unclear scope -> `explore` first, then decide with repo evidence
+- after `explore`, rerun `workflow-route` with `scopeKnown=true` when you want the router to use measured scope instead of text
 - RCA / tradeoff / architecture -> `glm-analyzer`
 - default review-only / final review -> `glm-reviewer`
+- large or high-impact implementation with known scope -> `gpt-planner`, or `kimi-context` -> `gpt-planner` when the context is heavy
 - GPT only on escalation or explicit premium review
 - large context -> `kimi-context`
-- localized implementation -> `qwen-coder`
+- localized implementation and contained implementation work -> `qwen-coder`
 - tests / evals / git / PR work -> `qwen-operator`
 - RevenueCat-specific work -> `revenuecat-agent`
 - writing / naming -> `minimax-writer`

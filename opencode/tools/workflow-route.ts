@@ -3,6 +3,7 @@ import { tool } from "@opencode-ai/plugin"
 type Route =
   | "self"
   | "explore"
+  | "gpt-planner"
   | "glm-analyzer"
   | "glm-reviewer"
   | "gpt-critic"
@@ -137,8 +138,11 @@ const REVENUECAT_PATTERNS = [
 const IMPLEMENT_PATTERNS = [
   /\bimplement\b/i,
   /\bfix\b/i,
-  /\brefactor\b/i,
   /\bchange\b/i,
+  /\bmudar\b/i,
+  /\balterar\b/i,
+  /\bmodificar\b/i,
+  /\btrocar\b/i,
   /\bupdate\b/i,
   /\badd\b/i,
   /\bremove\b/i,
@@ -173,6 +177,7 @@ export default tool({
   args: {
     task: tool.schema.string().describe("Compact summary of the user request or current task"),
     fileCount: tool.schema.number().int().nonnegative().optional().describe("Approximate number of relevant files"),
+    scopeKnown: tool.schema.boolean().optional().describe("True when implementation scope was already measured from repo evidence rather than guessed from wording"),
     hasLongLogs: tool.schema.boolean().optional().describe("True when logs are long or noisy"),
     hasLargeDiff: tool.schema.boolean().optional().describe("True when the diff or change set is large"),
     hasLargeSpec: tool.schema.boolean().optional().describe("True when there is a long spec, RFC, or document"),
@@ -182,6 +187,7 @@ export default tool({
     const text = args.task.trim()
     const reasons: string[] = []
     const fileCount = args.fileCount ?? 0
+    const scopeKnown = Boolean(args.scopeKnown)
     const largeContext = Boolean(args.hasLongLogs || args.hasLargeDiff || args.hasLargeSpec || fileCount >= 8)
     const search = matchesAny(text, SEARCH_PATTERNS)
     const rca = matchesAny(text, RCA_PATTERNS)
@@ -191,7 +197,12 @@ export default tool({
     const operate = matchesAny(text, OPERATE_PATTERNS)
     const implementation = matchesAny(text, IMPLEMENT_PATTERNS)
     const revenuecat = matchesAny(text, REVENUECAT_PATTERNS)
+    const knownLargeImplementation = implementation && scopeKnown && (fileCount >= 4 || Boolean(args.hasLargeDiff || args.hasLargeSpec))
+    const implementationHeavyContext = knownLargeImplementation && Boolean(args.hasLongLogs || args.hasLargeDiff || args.hasLargeSpec || fileCount >= 8)
+    const containedImplementation = implementation && scopeKnown && fileCount > 0 && fileCount < 4 && !args.hasLargeDiff && !args.hasLargeSpec
+    const unknownImplementationScope = implementation && !knownLargeImplementation && !containedImplementation
     const reviewOnly = review && !implementation
+    const writingOnly = writing && !implementation
 
     let route: Route = "self"
     let followUp: Route | undefined
@@ -211,11 +222,29 @@ export default tool({
       followUp = "gpt-critic"
       score = 5
       reasons.push("Task is review-only and high-stakes, so it should start with GLM review and escalate to GPT if needed")
-    } else if (implementation && operate) {
+    } else if (implementationHeavyContext) {
+      route = "kimi-context"
+      followUp = "gpt-planner"
+      score = 5
+      reasons.push("Task is implementation work with known large scope and heavy context, so compress the context before producing a binding GPT plan")
+    } else if (knownLargeImplementation) {
+      route = "gpt-planner"
+      followUp = "qwen-coder"
+      score = 5
+      reasons.push("Task is implementation work with known large scope, so it should get an explicit GPT plan before execution")
+    } else if (unknownImplementationScope) {
+      route = "explore"
+      score = 4
+      reasons.push("Task needs code changes but the real scope is not known yet, so measure it from repo evidence before choosing direct execution or GPT planning")
+    } else if (containedImplementation && operate) {
       route = "qwen-coder"
       followUp = "qwen-operator"
       score = 5
-      reasons.push("Task needs both code changes and repo operations, so implementation should be delegated before operational follow-through")
+      reasons.push("Task is contained implementation work with repo operations, so implement first and then hand off operational follow-through")
+    } else if (containedImplementation) {
+      route = "qwen-coder"
+      score = 4
+      reasons.push("Task is contained implementation work with scope already measured from repo evidence")
     } else if (largeContext && revenuecat) {
       route = "kimi-context"
       followUp = "revenuecat-agent"
@@ -234,7 +263,7 @@ export default tool({
       route = "glm-reviewer"
       score = 4
       reasons.push("Task asks for review-only work and should use the default GLM reviewer")
-    } else if (writing) {
+    } else if (writingOnly) {
       route = "minimax-writer"
       score = 4
       reasons.push("Task is wording, naming, rewrite, or brainstorming heavy")
@@ -243,11 +272,6 @@ export default tool({
       followUp = "glm-analyzer"
       score = 5
       reasons.push("Task combines large context with root cause or tradeoff analysis")
-    } else if (largeContext && implementation) {
-      route = "kimi-context"
-      followUp = "qwen-coder"
-      score = 5
-      reasons.push("Task combines large context with contained implementation work")
     } else if (operate) {
       route = "qwen-operator"
       score = 4
@@ -264,17 +288,16 @@ export default tool({
       route = "glm-analyzer"
       score = 4
       reasons.push("Task is root cause, debugging, architecture, or tradeoff analysis")
-    } else if (implementation) {
-      route = "qwen-coder"
-      score = 3
-      reasons.push("Task is code-heavy and appears contained enough for focused implementation")
     } else {
       reasons.push("Task is simple enough for the primary agent to handle directly")
     }
 
     const hints: string[] = []
     if (route === "explore") hints.push("Use the Task/subagent flow with explore to gather file locations and quick evidence before continuing")
+    if (route === "explore" && implementation)
+      hints.push("For implementation triage, ask explore for touched files, rough file count, boundary or public API impact, state or cache impact, navigation or schema impact, and a contained-vs-high-impact recommendation. Then rerun workflow-route with scopeKnown=true and the measured signals")
     if (route === "kimi-context") hints.push("Use the Task/subagent flow with kimi-context and ask for a compressed summary, key facts, gaps, and next steps")
+    if (route === "gpt-planner") hints.push("Use the Task/subagent flow with gpt-planner and ask for scope, invariants, touched files, ordered steps, risks, and a validation checklist. Then hand the plan to qwen-coder as binding execution scope")
     if (route === "glm-analyzer") hints.push("Use the Task/subagent flow with glm-analyzer and ask for root cause, evidence, fix options, and residual risks")
     if (route === "glm-reviewer") hints.push("Use the Task/subagent flow with glm-reviewer and ask for findings, confidence level, and whether GPT escalation is needed")
     if (route === "gpt-critic") hints.push("Use the Task/subagent flow with gpt-critic only as escalation or explicit premium review")
@@ -284,7 +307,8 @@ export default tool({
     if (route === "minimax-writer") hints.push("Use the Task/subagent flow with minimax-writer and ask for 3 to 5 strong alternatives ranked best first")
     if (route === "general") hints.push("Use the Task/subagent flow with general, split only truly independent subtasks, and integrate the results yourself")
     if (followUp) hints.push(`After ${route}, continue with ${followUp}`)
-    if (implementation) hints.push("If files change, run the mandatory gpt-critic review at the end, not at the start")
+    if (implementation && operate) hints.push("After the implementation path finishes code changes, continue with qwen-operator for tests, git workflow, and PR work when needed")
+    if (implementation) hints.push("If files change, run the mandatory glm-reviewer review at the end, not at the start")
 
     return JSON.stringify(
       {

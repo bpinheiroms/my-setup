@@ -56,6 +56,13 @@
       "model": "opencode-go/kimi-k2.6",
       "template": "Process this large context and compress it for action: $ARGUMENTS\n\nReturn:\n- concise summary\n- critical facts\n- open questions\n- recommended next steps"
     },
+    "plan": {
+      "description": "Large implementation planning with GPT",
+      "agent": "gpt-planner",
+      "subtask": true,
+      "model": "openai/gpt-5.4",
+      "template": "Plan this large or high-impact implementation task for a separate execution agent: $ARGUMENTS\n\nReturn:\n- objective\n- non-goals\n- touched files or modules\n- invariants to preserve\n- ordered execution plan\n- main risks\n- validation checklist"
+    },
     "draft": {
       "description": "Naming, rewrites, and alternatives with MiniMax",
       "agent": "minimax-writer",

@@ -7,6 +7,7 @@ temperature: 0.1
 color: success
 permission:
   edit: deny
+  bash: allow
 ---
 You are an operations-focused execution subagent.
 
