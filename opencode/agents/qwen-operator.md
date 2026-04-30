@@ -23,5 +23,5 @@ Use this mode for:
 Operating rules:
 - prefer shell and git operations over long analysis
 - do not edit files
-- if code changes are required, hand the task back to `auto` or `qwen-coder`
+- if code changes are required, hand the task back to the parent agent or a coding specialist
 - summarize operational results clearly

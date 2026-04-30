@@ -19,7 +19,7 @@
   },
   "model": "opencode-go/kimi-k2.6",
   "small_model": "opencode-go/deepseek-v4-flash",
-  "default_agent": "auto",
+  "default_agent": "manual-direct",
   "compaction": {
     "auto": true,
     "prune": true,
@@ -35,6 +35,28 @@
     ]
   },
   "command": {
+    "raw": {
+      "description": "Direct/manual mode in the current thread with minimal harness",
+      "agent": "manual-direct",
+      "model": "opencode-go/kimi-k2.6",
+      "template": "$ARGUMENTS"
+    },
+    "open": {
+      "description": "Run this through the open-model orchestrator only",
+      "agent": "open-orchestrator",
+      "model": "opencode-go/kimi-k2.6",
+      "template": "$ARGUMENTS"
+    },
+    "gpt": {
+      "description": "Run this through the GPT-only orchestrator",
+      "agent": "gpt-orchestrator",
+      "model": "openai/gpt-5.4",
+      "template": "$ARGUMENTS"
+    },
+    "grill": {
+      "description": "Stress-test a plan or design with the grill-me skill",
+      "template": "Load the `grill-me` skill and use it for this topic: $ARGUMENTS\n\nAsk one question at a time. For each question, give your recommended answer too. If the repo can answer something, inspect it instead of asking."
+    },
     "rca": {
       "description": "Deep root cause analysis with GLM",
       "agent": "glm-analyzer",
@@ -47,7 +69,14 @@
       "agent": "glm-reviewer",
       "subtask": true,
       "model": "opencode-go/glm-5",
-      "template": "Review this completed work carefully: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the single most important improvement\n- confidence level\n- whether GPT escalation is needed"
+      "template": "Review this completed work carefully: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the single most important improvement\n- confidence level"
+    },
+    "judge": {
+      "description": "Second opinion or high-stakes review with GPT",
+      "agent": "gpt-critic",
+      "subtask": true,
+      "model": "openai/gpt-5.4",
+      "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
     },
     "ctx": {
       "description": "Long-context synthesis with Kimi",
@@ -57,11 +86,18 @@
       "template": "Process this large context and compress it for action: $ARGUMENTS\n\nReturn:\n- concise summary\n- critical facts\n- open questions\n- recommended next steps"
     },
     "plan": {
-      "description": "Large implementation planning with GPT",
+      "description": "Explicit GPT implementation plan",
       "agent": "gpt-planner",
       "subtask": true,
       "model": "openai/gpt-5.4",
-      "template": "Plan this large or high-impact implementation task for a separate execution agent: $ARGUMENTS\n\nReturn:\n- objective\n- non-goals\n- touched files or modules\n- invariants to preserve\n- ordered execution plan\n- main risks\n- validation checklist"
+      "template": "Plan this implementation task for a separate execution agent: $ARGUMENTS\n\nReturn:\n- objective\n- non-goals\n- touched files or modules\n- invariants to preserve\n- ordered execution plan\n- main risks\n- validation checklist"
+    },
+    "plan-open": {
+      "description": "Explicit open-model implementation plan",
+      "agent": "open-planner",
+      "subtask": true,
+      "model": "opencode-go/kimi-k2.6",
+      "template": "Plan this implementation task for a separate execution agent: $ARGUMENTS\n\nReturn:\n- objective\n- non-goals\n- touched files or modules\n- constraints or invariants\n- ordered execution plan\n- validation checklist"
     },
     "draft": {
       "description": "Naming, rewrites, and alternatives with MiniMax",
@@ -70,26 +106,19 @@
       "model": "opencode-go/minimax-m2.7",
       "template": "Create 3 to 5 strong alternatives for: $ARGUMENTS\n\nOptimize for clarity, originality, and usefulness. Rank the best option first and explain tradeoffs briefly."
     },
-    "revenuecat": {
-      "description": "RevenueCat MCP workflow",
-      "agent": "revenuecat-agent",
-      "subtask": true,
-      "model": "opencode-go/qwen3.5-plus",
-      "template": "Use RevenueCat MCP tools for this task: $ARGUMENTS\n\nPrefer MCP tool usage over guessing. Summarize what you found and any constraints."
-    },
-    "judge": {
-      "description": "Second opinion or final review with GPT",
-      "agent": "gpt-critic",
-      "subtask": true,
-      "model": "openai/gpt-5.4",
-      "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
-    },
     "code": {
-      "description": "Fast coding pass with MiMo Pro",
+      "description": "Focused coding pass with MiMo Pro",
       "agent": "qwen-coder",
       "subtask": true,
       "model": "opencode-go/mimo-v2.5-pro",
-      "template": "Implement this coding task quickly and precisely: $ARGUMENTS\n\nTreat parent instructions and scope as binding unless repo evidence proves they are wrong. Prefer the smallest literal implementation, focused diffs, and direct verification. Do not broaden scope or redesign unless necessary."
+      "template": "Implement this coding task quickly and precisely: $ARGUMENTS\n\nTreat parent instructions and scope as binding unless repo evidence proves they are wrong. Prefer the smallest literal implementation, focused diffs, and direct verification."
+    },
+    "code-gpt": {
+      "description": "Focused GPT coding pass",
+      "agent": "gpt-builder",
+      "subtask": true,
+      "model": "openai/gpt-5.4",
+      "template": "Implement this coding task precisely: $ARGUMENTS\n\nTreat parent instructions and scope as binding unless repo evidence proves they are wrong. Prefer the smallest literal implementation, focused diffs, and direct verification."
     },
     "ops": {
       "description": "Run tests, evals, and git workflows with DeepSeek",
@@ -98,11 +127,12 @@
       "model": "opencode-go/deepseek-v4-flash",
       "template": "Handle the repo operations for this task: $ARGUMENTS\n\nFocus on tests, evals, git operations, commits, pushes, and PR creation. Do not make code edits unless explicitly told to switch back to a coding agent."
     },
-    "ship": {
-      "description": "Implementation workflow with auto orchestration",
-      "agent": "auto",
+    "revenuecat": {
+      "description": "RevenueCat MCP workflow",
+      "agent": "revenuecat-agent",
+      "subtask": true,
       "model": "opencode-go/kimi-k2.6",
-      "template": "Implement this task end-to-end: $ARGUMENTS\n\nRead the codebase first, prefer the smallest correct change, verify results, and summarize what changed."
+      "template": "Use RevenueCat MCP tools for this task: $ARGUMENTS\n\nPrefer MCP tool usage over guessing. Summarize what you found and any constraints."
     }
   }
 }
