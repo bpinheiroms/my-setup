@@ -55,7 +55,7 @@
     },
     "fw": {
       "description": "Run through the Fireworks AI orchestrator",
-      "agent": "router-orchestrator",
+      "agent": "fw-orchestrator",
       "model": "accounts/fireworks/models/kimi-k2p6",
       "template": "$ARGUMENTS"
     },
