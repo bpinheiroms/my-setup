@@ -2,7 +2,7 @@
 description: Use automatically for RevenueCat-specific questions, subscription debugging, offerings, entitlements, and paywall-related workflows.
 mode: subagent
 hidden: true
-model: opencode-go/qwen3.5-plus
+model: opencode-go/kimi-k2.6
 temperature: 0.1
 color: warning
 permission:

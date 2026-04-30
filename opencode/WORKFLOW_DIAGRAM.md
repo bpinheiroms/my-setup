@@ -1,98 +1,33 @@
-# OpenCode Workflow Diagram
-
-Mermaid version of the workflow.
-
-This is the canonical visual explanation of the setup.
-
-## Main Diagram
+# Workflow Diagram
 
 ```mermaid
-flowchart LR
-    U[User request] --> A[auto<br/>Kimi 2.6<br/>default agent]
+flowchart TD
+    U["User task"] --> M{"Which mode?"}
 
-    A --> T{Trivial task?}
-    T -->|Yes| D[Handle directly]
-    D --> R[Respond to user]
+    M -->|Raw / direct| D["manual-direct"]
+    M -->|Open-only orchestration| O["open-orchestrator"]
+    M -->|GPT-only orchestration| G["gpt-orchestrator"]
 
-    T -->|No| WR[workflow-route<br/>deterministic task router]
+    D --> D1["Work directly in current thread"]
+    D --> D2["Ask targeted questions only when needed"]
 
-    WR -->|self| A
-    WR -->|explore| EX[explore<br/>repo discovery / implementation triage]
-    WR -->|qwen-coder| QC[qwen-coder<br/>MiMo v2.5 Pro<br/>focused code / contained implementation]
-    WR -->|qwen-operator| QO[qwen-operator<br/>DeepSeek V4 Flash<br/>tests / evals / git / PR]
-    WR -->|kimi-context| KC[kimi-context<br/>compress large context]
-    WR -->|gpt-planner| PL[gpt-planner<br/>GPT-5.4<br/>large implementation plan]
-    WR -->|glm-analyzer| GA[glm-analyzer<br/>RCA / tradeoffs / risk]
-    WR -->|glm-reviewer| GV[glm-reviewer<br/>GLM-5<br/>default final review]
-    WR -->|revenuecat-agent| RC[revenuecat-agent<br/>RevenueCat MCP specialist]
-    WR -->|minimax-writer| MW[minimax-writer<br/>naming / rewrite / copy]
-    WR -->|general| GE[general<br/>parallel subtasks]
-    WR -->|escalation review| CR[gpt-critic<br/>GPT-5.4<br/>escalation-only path]
+    O --> OR{"workflow-route(profile=open)"}
+    OR -->|Search / unknown scope| OE["explore"]
+    OR -->|Small measured impl| OM["qwen-coder"]
+    OR -->|Larger measured impl| OP["open-planner"]
+    OP --> OM
+    OR -->|RCA| OA["glm-analyzer"]
+    OR -->|Review| OV["glm-reviewer"]
+    OR -->|Large context| OK["kimi-context"]
+    OR -->|Ops / git / tests| OO["qwen-operator"]
+    OR -->|Copy / naming| OW["minimax-writer"]
 
-    EX --> A
-    QC --> A
-    QO --> A
-    KC --> A
-    PL --> A
-    GA --> A
-    GV --> A
-    RC --> A
-    MW --> A
-    GE --> A
-    CR --> A
-
-    A --> E[auto continues execution<br/>tests / evals / final state]
-    E --> C{Did final state change files?}
-
-    C -->|No| R
-    C -->|Yes| G[glm-reviewer<br/>GLM-5<br/>default final review]
-
-    G --> M{Material issue found?}
-    M -->|No| F[Finish / commit / PR / answer]
-    M -->|Yes| FX[Fix issue in auto]
-    FX --> G
-    G --> H{Escalate to GPT?}
-    H -->|Yes| GP[gpt-critic<br/>GPT-5.4<br/>escalation review]
-    H -->|No| F
-    GP --> F
-
-    classDef primary fill:#A5D8FF,stroke:#1c1c1c,color:#1c1c1c;
-    classDef router fill:#FFD8A8,stroke:#1c1c1c,color:#1c1c1c;
-    classDef code fill:#B2F2BB,stroke:#1c1c1c,color:#1c1c1c;
-    classDef context fill:#C5F6FA,stroke:#1c1c1c,color:#1c1c1c;
-    classDef analysis fill:#E5DBFF,stroke:#1c1c1c,color:#1c1c1c;
-    classDef writing fill:#FFD6E7,stroke:#1c1c1c,color:#1c1c1c;
-    classDef review fill:#FFC9C9,stroke:#1c1c1c,color:#1c1c1c;
-    classDef neutral fill:#F1F3F5,stroke:#1c1c1c,color:#1c1c1c;
-
-    class A,D,E,F,R primary;
-    class WR router;
-    class QC code;
-    class QO code;
-    class KC context;
-    class PL review;
-    class GA analysis;
-    class GV analysis;
-    class RC context;
-    class MW writing;
-    class G,GP,CR review;
-    class EX,GE,FX neutral;
+    G --> GR{"Need delegation?"}
+    GR -->|No| GS["Work directly in current thread"]
+    GR -->|Scope unclear| GE["explore"]
+    GR -->|Short plan helps| GF["gpt-planner-fast"]
+    GR -->|Larger or riskier| GP["gpt-planner"]
+    GF --> GB["gpt-builder"]
+    GP --> GB
+    GR -->|Review / second opinion| GC["gpt-critic"]
 ```
-
-## Reading Guide
-
-- The user talks only to `auto`.
-- `auto` handles simple work directly.
-- `workflow-route` decides which specialist to call for non-trivial work.
-- Implementation work with unclear scope goes through `explore` first so sizing comes from repo evidence, not wording alone.
-- Large implementation work can go through `kimi-context` and `gpt-planner` before code execution starts.
-- Specialists return control back to `auto`.
-- If the final state changed files, `glm-reviewer` reviews the completed result first.
-- `gpt-critic` is used only when escalation is needed.
-
-## Core Message
-
-Open models do almost all of the work.
-
-GLM does the default final review on completed changed work.
-GPT is reserved for escalation only.

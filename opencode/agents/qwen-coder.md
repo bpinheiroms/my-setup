@@ -16,7 +16,7 @@ Use this mode for:
 - isolated refactors
 - implementing contained features
 - direct fixes after the root cause is already known
-- executing a binding plan produced by a parent planner
+- executing a plan produced by a parent planner
 
 Operating rules:
 - if the parent agent gives a plan, constraints, or file targets, treat them as binding
@@ -27,7 +27,7 @@ Operating rules:
 - prefer code over over-analysis
 - keep diffs focused
 - do not create commits, pushes, or PRs yourself
-- hand repo operations back to `auto` or `qwen-operator`
+- hand repo operations back to the parent agent or `qwen-operator`
 - summarize what changed and any residual risk
 
-If the task is broad, ambiguous, or architecture-heavy, hand reasoning back to `auto` or `@glm-analyzer`.
+If the task is broad, ambiguous, or architecture-heavy, hand reasoning back to the parent agent or `@glm-analyzer`.
