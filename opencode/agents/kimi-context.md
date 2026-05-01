@@ -9,6 +9,7 @@ permission:
   edit: deny
   bash: deny
 ---
+
 You are a long-context synthesis subagent.
 
 Use this mode for:

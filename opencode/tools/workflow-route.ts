@@ -11,8 +11,8 @@ type Route =
   | "gpt-builder"
   | "gpt-critic"
   | "kimi-context"
-  | "qwen-coder"
-  | "qwen-operator"
+  | "mimo-coder"
+  | "deepseek-operator"
   | "revenuecat-agent"
   | "minimax-writer"
   | "general"
@@ -196,7 +196,10 @@ export default tool({
     "Deterministically route a user task to the best workflow for the active profile. Supports open-only and GPT-only orchestration without forcing extra ceremony.",
   args: {
     task: tool.schema.string().describe("Compact summary of the user request or current task"),
-    profile: tool.schema.string().optional().describe("Workflow profile: open, gpt, or omit for generic/manual routing"),
+    profile: tool.schema
+      .string()
+      .optional()
+      .describe("Workflow profile: open, gpt, or omit for generic/manual routing"),
     fileCount: tool.schema.number().int().nonnegative().optional().describe("Approximate number of relevant files"),
     scopeKnown: tool.schema.boolean().optional().describe("True when implementation scope was already measured from repo evidence rather than guessed from wording"),
     publicApiImpact: tool.schema.boolean().optional().describe("True when the change affects a public API, shared contract, or boundary"),
@@ -281,12 +284,12 @@ export default tool({
       score = 5
       reasons.push("Open-only implementation task has measured scope and heavy context")
     } else if (openOnly && smallScopedImplementation) {
-      route = "qwen-coder"
+      route = "mimo-coder"
       score = 5
       reasons.push("Open-only implementation task is small and measured, so direct execution is faster than planning")
     } else if (openOnly && scopedImplementation) {
       route = "open-planner"
-      followUp = "qwen-coder"
+      followUp = "mimo-coder"
       score = 5
       reasons.push("Open-only implementation task has measured scope and benefits from an explicit plan")
     } else if (gptOnly && largeContext && scopedImplementation) {
@@ -317,7 +320,7 @@ export default tool({
       score = 4
       reasons.push("Task is mainly naming, rewrite, or copy work")
     } else if (openOnly && operate) {
-      route = "qwen-operator"
+      route = "deepseek-operator"
       score = 4
       reasons.push("Task is primarily operational in the open-only workflow")
     } else if (openOnly && largeContext) {
@@ -340,22 +343,37 @@ export default tool({
       reasons.push("Task is simple enough for the current agent to handle directly")
     }
 
-    if (route === "explore") hints.push("Use `explore` to gather file locations, rough scope, and concrete repo evidence before changing code")
-    if (route === "open-planner") hints.push("After planning, hand execution to `qwen-coder` with the plan, constraints, and expected validation")
-    if (route === "gpt-planner-fast") hints.push("Use the short GPT planning path only when a brief written plan will reduce mistakes more than it slows you down")
-    if (route === "gpt-planner") hints.push("If you use a separate executor, pass the plan plus touched files, constraints, and validation steps")
-    if (route === "gpt-builder") hints.push("Keep the coding task narrow and concrete when handing it to `gpt-builder`")
-    if (route === "glm-analyzer") hints.push("Ask for root cause, evidence, fix options, and residual risks")
-    if (route === "glm-reviewer") hints.push("Run review on the final changed state, not on intermediate edits")
-    if (route === "gpt-critic") hints.push("Use GPT review for explicit premium review, second opinions, or high-stakes checks")
-    if (route === "kimi-context") hints.push("Ask for compressed summary, key facts, open questions, and recommended next actions")
-    if (route === "qwen-coder") hints.push("Keep the coding scope narrow and attach any touched-file evidence you already have")
-    if (route === "qwen-operator") hints.push("Use it for tests, evals, git workflow, commit, push, and PR work")
-    if (route === "revenuecat-agent") hints.push("Prefer MCP tool usage over guessing product, entitlement, or subscriber state")
-    if (route === "minimax-writer") hints.push("Ask for 3 to 5 ranked alternatives with short tradeoffs")
-    if (route === "general") hints.push("Split only truly independent work and integrate the outputs in the parent thread")
+    if (route === "explore")
+      hints.push("Use `explore` to gather file locations, rough scope, and concrete repo evidence before changing code")
+    if (route === "open-planner")
+      hints.push("After planning, hand execution to `mimo-coder` with the plan, constraints, and expected validation")
+    if (route === "gpt-planner-fast")
+      hints.push("Use the short GPT planning path only when a brief written plan will reduce mistakes more than it slows you down")
+    if (route === "gpt-planner")
+      hints.push("If you use a separate executor, pass the plan plus touched files, constraints, and validation steps")
+    if (route === "gpt-builder")
+      hints.push("Keep the coding task narrow and concrete when handing it to `gpt-builder`")
+    if (route === "glm-analyzer")
+      hints.push("Ask for root cause, evidence, fix options, and residual risks")
+    if (route === "glm-reviewer")
+      hints.push("Run review on the final changed state, not on intermediate edits")
+    if (route === "gpt-critic")
+      hints.push("Use GPT review for explicit premium review, second opinions, or high-stakes checks")
+    if (route === "kimi-context")
+      hints.push("Ask for compressed summary, key facts, open questions, and recommended next actions")
+    if (route === "mimo-coder")
+      hints.push("Keep the coding scope narrow and attach any touched-file evidence you already have")
+    if (route === "deepseek-operator")
+      hints.push("Use it for tests, evals, git workflow, commit, push, and PR work")
+    if (route === "revenuecat-agent")
+      hints.push("Prefer MCP tool usage over guessing product, entitlement, or subscriber state")
+    if (route === "minimax-writer")
+      hints.push("Ask for 3 to 5 ranked alternatives with short tradeoffs")
+    if (route === "general")
+      hints.push("Split only truly independent work and integrate the outputs in the parent thread")
     if (followUp) hints.push(`After ${route}, continue with ${followUp}`)
-    if (implementation) hints.push("If requirements are still fuzzy after repo inspection, ask a few targeted questions before editing")
+    if (implementation)
+      hints.push("If requirements are still fuzzy after repo inspection, ask a few targeted questions before editing")
 
     return JSON.stringify(
       {

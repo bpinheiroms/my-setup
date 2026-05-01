@@ -1,157 +1,146 @@
 # OpenCode
 
-OpenCode global setup split into 3 explicit modes:
+OpenCode global setup com 3 orquestradores explícitos:
 
-- `manual-direct`
-  - minimal harness
-  - direct interaction in the current thread
-  - high-quality direct mode on the open-model path
-- `open-orchestrator`
-  - orchestration using only `opencode-go/*` models
-  - better fit when you want specialization without spending GPT
-  - tuned for quality first, not lowest cost
 - `gpt-orchestrator`
-  - GPT-only workflow
-  - more interactive and less ceremonial than the old harness
+  - GPT-only workflow (primary)
+  - usa apenas `openai/*`
+  - mais interativo e menos cerimonial
+- `go-orchestrator`
+  - Quality-first usando `opencode-go/*` (secondary)
+  - mesma especialização do gpt, mas sem gastar GPT
+- `router-orchestrator`
+  - OpenRouter fallback usando `openrouter/*`
+  - mesmas regras do go, mas trabalha diretamente (sem subagents de provider)
 
-This replaces the old single-auto workflow.
+Fallback chain:
+```
+GPT (primary) → GO (secondary) → Router (fallback)
+```
 
-## Why This Structure
+Isso substitui o setup anterior de `manual-direct`, `open-orchestrator`, `gpt-orchestrator`, `kimi-context`.
 
-The previous setup had three problems:
+## Por que esta estrutura
 
-- GPT planning was forced too often
-- the primary agent asked too few questions before executing
-- too much time was spent orchestrating instead of either coding directly or asking for clarification
+O setup anterior tinha problemas:
 
-The new rule is simpler:
+- muitos modos primários com sobreposição (manual-direct vs open-orchestrator)
+- kimi-context era primário quando deveria ser subagent
+- não havia suporte para OpenRouter como fallback
 
-- direct mode for hands-on work
-- open orchestration when you want multi-model specialization without GPT
-- GPT orchestration when you want GPT judgment without open-model routing
+A nova regra é simples:
 
-## Files
+- 3 orquestradores, cada um com seu provider
+- regras compartilhadas centralizadas em `AGENTS.md`
+- cada orquestrador herda as regras globais e adiciona apenas o boundary de provider
+- fallback manual (troca de agent) quando a cota acaba
+
+## Arquivos
 
 - `opencode.json`
-  - main config
-  - default model and default agent
-  - custom commands
+  - config principal
+  - modelo default e agent default
+  - commands customizados
 - `AGENTS.md`
-  - lightweight global rules shared by all modes
+  - regras globais compartilhadas por todos os modos
+  - fallback chain, execution rules, orchestration rules
 - `agents/`
-  - primary and subagent definitions
+  - definições de primários e subagents
 - `skills/grill-me/SKILL.md`
-  - stress-test skill for plans and designs
+  - skill para stress-test de planos e designs
 - `plugins/rtk.ts`
-  - optional command rewrite plugin
+  - plugin opcional de rewrite de commands
 - `tools/workflow-route.ts`
-  - deterministic router with `profile=open` and `profile=gpt`
+  - router determinístico com `profile=open` e `profile=gpt`
 
-## Primary Modes
-
-### `manual-direct`
-
-Use when:
-
-- you want direct conversation with the model
-- you do not want automatic subagent orchestration
-- the task is small or you want to steer every step
-
-Behavior:
-
-- works in the current thread
-- asks a few questions only when needed
-- does the work itself by default
-
-### `open-orchestrator`
-
-Use when:
-
-- you want orchestration without spending GPT
-- specialization is useful
-- you want the strongest open-model path in this setup
-
-Allowed model family:
-
-- `opencode-go/*` only
-
-Typical routing:
-
-- repo discovery -> `explore`
-- small measured implementation -> `qwen-coder`
-- larger measured implementation -> `open-planner` -> `qwen-coder`
-- RCA -> `glm-analyzer`
-- final review -> `glm-reviewer`
-- tests / git / PR -> `qwen-operator`
-- huge context -> `kimi-context`
+## Primários
 
 ### `gpt-orchestrator`
 
-Use when:
+Use quando:
 
-- you want GPT-only behavior
-- you want more questions earlier
-- you want less orchestration overhead than the old harness
+- você está no plano OpenAI e ainda tem cota
+- quer mais interatividade e menos cerimônia
+- prefere GPT para julgamento e interação
 
-Allowed model family:
+Behavior:
 
-- `openai/*` only
+- executa diretamente na thread por default
+- faz perguntas de clarificação mais cedo
+- delega para `gpt-planner`, `gpt-builder`, `gpt-critic` quando necessário
 
-Typical behavior:
+### `go-orchestrator`
 
-- executes directly in-thread by default
-- asks for clarification earlier when definition of done is weak
-- uses `gpt-planner-fast` or `gpt-planner` only when the plan adds value
-- uses `gpt-builder` for isolated execution chunks
-- uses `gpt-critic` for second-opinion review or high-stakes checks
+Use quando:
 
-## How To Choose A Mode
+- a cota do OpenAI acabou
+- quer especialização multi-modelo sem gastar GPT
+- quer o caminho open-model mais forte
 
-OpenCode already supports this natively.
+Behavior:
 
-Per the official docs:
+- delega para subagents opencode-go (`mimo-coder`, `glm-analyzer`, `deepseek-operator`, etc.)
+- tuned para qualidade primeiro, não menor custo
 
-- primary agents can be switched in-session with `Tab`
-- commands can target a specific agent
-- subagents can be mentioned with `@`
+### `router-orchestrator`
 
-References:
+Use quando:
+
+- a cota do OpenAI e do opencode-go acabaram
+- precisa continuar operando por tokens no OpenRouter
+
+Behavior:
+
+- mesmas regras de orquestração do go-orchestrator
+- trabalha diretamente na thread (não delega para subagents de provider)
+- usa `explore` e `general` quando necessário
+- preferência por execução direta ao invés de delegação
+
+## Como escolher um modo
+
+OpenCode suporta nativamente:
+
+- agentes primários podem ser trocados em sessão com `Tab`
+- commands podem targetar um agente específico
+- subagents podem ser mencionados com `@`
+
+Referências:
 
 - [Agents](https://opencode.ai/docs/agents/)
 - [Config](https://opencode.ai/docs/config/)
 - [Commands](https://opencode.ai/docs/commands/)
 - [Skills](https://opencode.ai/docs/skills/)
 
-Practical usage:
+Uso prático:
 
-- stay in `manual-direct` for raw interaction
-- switch to `open-orchestrator` when you want the open-model harness
-- switch to `gpt-orchestrator` when you want the GPT-only harness
+- comece em `gpt-orchestrator` (default)
+- quando acabar a cota do OpenAI, troque para `go-orchestrator`
+- quando acabar a cota do opencode-go, troque para `router-orchestrator`
 
 ## Commands
 
-- `/raw`
-  - run a task through `manual-direct`
-- `/open`
-  - run a task through `open-orchestrator`
 - `/gpt`
-  - run a task through `gpt-orchestrator`
+  - roda pelo `gpt-orchestrator`
+- `/go`
+  - roda pelo `go-orchestrator`
+- `/router`
+  - roda pelo `router-orchestrator`
 - `/grill`
-  - load `grill-me` and stress-test a plan or design
+  - carrega `grill-me` e stress-testa um plano ou design
 - `/plan`
-  - explicit GPT implementation plan
+  - plano de implementação explícito com GPT
 - `/plan-open`
-  - explicit open-model implementation plan
+  - plano de implementação explícito com open-model
 - `/code`
-  - focused coding pass with MiMo
+  - coding pass focado com MiMo
 - `/code-gpt`
-  - focused coding pass with GPT
+  - coding pass focado com GPT
 - `/review`
-  - final review with GLM
+  - review final com GLM
 - `/judge`
-  - GPT second-opinion review
+  - segunda opinião com GPT
 - `/rca`
-  - deeper root-cause analysis with GLM
+  - análise de causa raiz com GLM
 - `/ops`
   - tests, evals, git, push, PR
 
@@ -159,31 +148,31 @@ Practical usage:
 
 ### `grill-me`
 
-Purpose:
+Propósito:
 
 - challenge a plan before implementation
 - surface missing assumptions
 - force clearer decisions on scope, rollout, and validation
 
-How it behaves:
+Como se comporta:
 
 - asks one question at a time
 - includes a recommended answer with each question
 - checks the repo first if the answer may already exist there
 
-Use it when you want the model to push back instead of immediately executing.
+Use when you want the model to push back instead of immediately executing.
 
-## Installation
+## Instalação
 
-This repository stores OpenCode configuration, not the OpenCode binary.
+Este repositório armazena configuração do OpenCode, não o binário.
 
-### Prerequisites
+### Pré-requisitos
 
-- OpenCode installed
-- provider authentication already configured
-- `bun` or `npm` available for the local plugin dependency
+- OpenCode instalado
+- autenticação dos providers já configurada
+- `bun` ou `npm` disponível para dependência do plugin local
 
-### Install
+### Instalar
 
 ```bash
 mkdir -p ~/.config/opencode
@@ -191,28 +180,31 @@ rsync -a opencode/ ~/.config/opencode/
 cd ~/.config/opencode && bun install
 ```
 
-If you do not use Bun:
+Se não usar Bun:
 
 ```bash
 cd ~/.config/opencode && npm install
 ```
 
-### Verify
+### Verificar
 
 ```bash
 opencode debug config
 opencode agent list
 ```
 
-Expected result:
+Resultado esperado:
 
-- default agent is `manual-direct`
-- custom primary agents include `manual-direct`, `open-orchestrator`, and `gpt-orchestrator`
-- the `grill-me` skill is discoverable
-- custom commands are visible
+- default agent é `gpt-orchestrator`
+- custom primary agents incluem `gpt-orchestrator`, `go-orchestrator`, `router-orchestrator`
+- a skill `grill-me` é discoverable
+- custom commands estão visíveis
 
 ## Design Notes
 
-- default model is now `opencode-go/kimi-k2.6`
-- GPT is no longer the global default path
-- planning is now optional and value-based, not mandatory ceremony
+- default model é `openai/gpt-5.4` (reflete o início da cadeia)
+- fallback chain: GPT → GO → Router
+- regras compartilhadas centralizadas em `AGENTS.md`
+- cada orquestrador herda regras globais e adiciona apenas boundary de provider
+- subagents específicos de provider permanecem disponíveis apenas para seus orquestradores
+- o router-orchestrator trabalha diretamente para evitar dependência de subagents de provider
