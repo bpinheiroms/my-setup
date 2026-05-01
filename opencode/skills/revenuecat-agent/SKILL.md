@@ -11,7 +11,7 @@ In this setup, RevenueCat access is **not** implemented as a normal skill workfl
 It is implemented as:
 
 - a remote MCP server named `revenuecat`
-- a dedicated subagent named `revenuecat-agent`
+- provider-specific subagents named `go-revenuecat-agent`, `router-revenuecat-agent`, and `fw-revenuecat-agent`
 
 ## Required Behavior
 
@@ -20,11 +20,15 @@ If this skill is loaded, do **not** continue as a skill-driven workflow.
 Instead:
 
 1. Use the `Task` tool.
-2. Delegate to `subagent_type: "revenuecat-agent"`.
-3. Pass the current RevenueCat question or task to that subagent.
+2. Delegate to the RevenueCat subagent that matches the current provider:
+   - `go-revenuecat-agent` for `opencode-go/*`
+   - `router-revenuecat-agent` for `openrouter/*`
+   - `fw-revenuecat-agent` for `fireworks-ai/*`
+3. If the current orchestrator is GPT-only, do not cross the provider boundary. Hand the task back so the parent can switch to a provider that has RevenueCat access.
+4. Pass the current RevenueCat question or task to that subagent.
 
 ## Notes
 
 - Prefer RevenueCat MCP tools over guessing.
-- If the task also needs repo investigation, let the parent agent combine results from `revenuecat-agent` and normal repo tools/subagents.
-- Do not claim this skill itself can inspect RevenueCat state. The subagent does that.
+- If the task also needs repo investigation, let the parent agent combine results from the matching RevenueCat subagent and normal repo tools/subagents.
+- Do not claim this skill itself can inspect RevenueCat state. The matching provider-specific subagent does that.

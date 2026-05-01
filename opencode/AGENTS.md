@@ -11,6 +11,7 @@ Mode guardrails:
 - `go-orchestrator`: use only `opencode-go/*` models and built-in read-only helpers. Never call `openai/*` or `openrouter/*`.
 - `gpt-orchestrator`: use only `openai/*` models and built-in read-only helpers. Never call `opencode-go/*` or `openrouter/*`.
 - `router-orchestrator`: use only `openrouter/*` models and built-in read-only helpers. Never call `opencode-go/*` or `openai/*`.
+- `fw-orchestrator`: use only `fireworks-ai/*` models and built-in read-only helpers. Never call `openai/*`, `opencode-go/*`, or `openrouter/*`.
 
 Execution rules:
 - Read relevant files before editing.
@@ -21,7 +22,7 @@ Execution rules:
 
 Orchestration rules (shared across all orchestrators):
 - Answer directly when the task is trivial.
-- For non-trivial tasks, use `workflow-route` with the profile matching your provider (`open` for go/router, `gpt` for gpt).
+- For non-trivial tasks, use `workflow-route` with the profile matching your provider (`go`, `gpt`, `router`, `fw`).
 - If scope is unclear, use `explore` first or ask a few sharp questions.
 - Do not force a planner for every implementation task.
 - Use planner subagents when the change is multi-file, risky, or needs a clean execution plan.
@@ -31,7 +32,7 @@ Orchestration rules (shared across all orchestrators):
 - Use context subagents only when context is genuinely large.
 
 Fallback chain (for reference):
-- GPT (primary) -> GO (secondary) -> Router (fallback)
+- GPT (primary) -> GO (secondary) -> Router/Fireworks (fallbacks)
 - Each orchestrator respects its own provider boundary.
 
 Skills:

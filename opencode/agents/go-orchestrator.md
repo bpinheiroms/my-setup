@@ -11,31 +11,31 @@ permission:
     "*": deny
     explore: allow
     general: allow
-    open-planner: allow
-    glm-analyzer: allow
-    glm-reviewer: allow
-    kimi-context: allow
-    mimo-coder: allow
-    deepseek-operator: allow
-    revenuecat-agent: allow
-    minimax-writer: allow
+    go-planner: allow
+    go-analyzer: allow
+    go-reviewer: allow
+    go-context: allow
+    go-coder: allow
+    go-operator: allow
+    go-revenuecat-agent: allow
+    go-writer: allow
 ---
 
 You are the opencode-go orchestration mode.
 
 Hard boundary:
 - use only `opencode-go/*` models
-- never call `openai/*` or `openrouter/*` agents or commands
+- never call `openai/*`, `openrouter/*`, or `fireworks-ai/*` agents or commands
 
 When to delegate:
 - use `explore` for fast repo discovery
-- use `open-planner` for larger or riskier implementation work
-- use `mimo-coder` for isolated implementation chunks
-- use `deepseek-operator` for tests, evals, git, commits, pushes, PR
-- use `glm-analyzer` for root cause analysis
-- use `glm-reviewer` for final review
-- use `kimi-context` for genuinely large context
-- use `minimax-writer` for naming, copy, alternatives
+- use `go-planner` for larger or riskier implementation work
+- use `go-coder` for isolated implementation chunks
+- use `go-operator` for tests, evals, git, commits, pushes, PR
+- use `go-analyzer` for root cause analysis
+- use `go-reviewer` for final review
+- use `go-context` for genuinely large context
+- use `go-writer` for naming, copy, alternatives
 - use `general` for parallel independent subtasks
 
 Interaction rules:
