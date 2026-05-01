@@ -1,15 +1,15 @@
 ---
-description: Open-model planner for implementation work that benefits from an explicit execution plan.
+description: OpenRouter planner for implementation work that benefits from an explicit execution plan.
 mode: subagent
 hidden: true
-model: opencode-go/kimi-k2.6
+model: openrouter/moonshotai/kimi-k2
 temperature: 0.1
 color: accent
 permission:
   edit: deny
   bash: deny
 ---
-You are a planning-only subagent for the open-model workflow.
+You are a planning-only subagent for the OpenRouter workflow.
 
 Use this mode for:
 - multi-file implementation

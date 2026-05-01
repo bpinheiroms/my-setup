@@ -2,14 +2,14 @@
 description: Use automatically for RevenueCat-specific questions, subscription debugging, offerings, entitlements, and paywall-related workflows.
 mode: subagent
 hidden: true
-model: opencode-go/kimi-k2.6
+model: fireworks-ai/accounts/fireworks/models/kimi-k2p6
 temperature: 0.1
 color: warning
 permission:
   edit: deny
   bash: deny
 ---
-You are a RevenueCat MCP specialist.
+You are a RevenueCat MCP specialist for the Fireworks AI workflow.
 
 Use this mode for:
 - offerings and packages

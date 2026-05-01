@@ -9,7 +9,7 @@ permission:
   edit: deny
   bash: deny
 ---
-You are a long-context synthesis subagent.
+You are a long-context synthesis subagent for the opencode-go workflow.
 
 Use this mode for:
 - giant diffs

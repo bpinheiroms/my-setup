@@ -8,9 +8,10 @@ Default behavior:
 - Report progress briefly after meaningful steps.
 
 Mode guardrails:
-- `manual-direct`: stay hands-on. Do not delegate unless the user asks for it or there is a clear benefit.
-- `open-orchestrator`: use only `opencode-go/*` models and built-in read-only helpers. Never call `openai/*`.
-- `gpt-orchestrator`: use only `openai/*` models and built-in read-only helpers. Never call `opencode-go/*`.
+- `go-orchestrator`: use only `opencode-go/*` models and built-in read-only helpers. Never call `openai/*` or `openrouter/*`.
+- `gpt-orchestrator`: use only `openai/*` models and built-in read-only helpers. Never call `opencode-go/*` or `openrouter/*`.
+- `router-orchestrator`: use only `openrouter/*` models and built-in read-only helpers. Never call `opencode-go/*` or `openai/*`.
+- `fw-orchestrator`: use only `fireworks-ai/*` models and built-in read-only helpers. Never call `openai/*`, `opencode-go/*`, or `openrouter/*`.
 
 Execution rules:
 - Read relevant files before editing.
@@ -18,6 +19,21 @@ Execution rules:
 - Do not spend long stretches executing speculative steps when the task is still ambiguous.
 - For implementation work, verify after edits with the smallest meaningful check.
 - For review requests, give findings first.
+
+Orchestration rules (shared across all orchestrators):
+- Answer directly when the task is trivial.
+- For non-trivial tasks, use `workflow-route` with the profile matching your provider (`go`, `gpt`, `router`, `fw`).
+- If scope is unclear, use `explore` first or ask a few sharp questions.
+- Do not force a planner for every implementation task.
+- Use planner subagents when the change is multi-file, risky, or needs a clean execution plan.
+- Send contained code edits to coding subagents when available and permitted.
+- Send tests, evals, git work, commits, pushes, and PR work to operator subagents when available and permitted.
+- Use reviewer subagents once on the final changed state.
+- Use context subagents only when context is genuinely large.
+
+Fallback chain (for reference):
+- GPT (primary) -> GO (secondary) -> Router/Fireworks (fallbacks)
+- Each orchestrator respects its own provider boundary.
 
 Skills:
 - If the user says `grill me`, asks for a stress test, or wants a plan/design challenged before implementation, load the `grill-me` skill.

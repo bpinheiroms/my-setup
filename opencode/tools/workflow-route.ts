@@ -3,21 +3,37 @@ import { tool } from "@opencode-ai/plugin"
 type Route =
   | "self"
   | "explore"
-  | "open-planner"
+  | "go-planner"
   | "gpt-planner-fast"
   | "gpt-planner"
-  | "glm-analyzer"
-  | "glm-reviewer"
+  | "go-analyzer"
+  | "go-reviewer"
   | "gpt-builder"
   | "gpt-critic"
-  | "kimi-context"
-  | "qwen-coder"
-  | "qwen-operator"
-  | "revenuecat-agent"
-  | "minimax-writer"
+  | "go-context"
+  | "go-coder"
+  | "go-operator"
+  | "go-revenuecat-agent"
+  | "go-writer"
+  | "router-planner"
+  | "router-analyzer"
+  | "router-reviewer"
+  | "router-context"
+  | "router-coder"
+  | "router-operator"
+  | "router-revenuecat-agent"
+  | "router-writer"
+  | "fw-planner"
+  | "fw-analyzer"
+  | "fw-reviewer"
+  | "fw-context"
+  | "fw-coder"
+  | "fw-operator"
+  | "fw-revenuecat-agent"
+  | "fw-writer"
   | "general"
 
-type Profile = "open" | "gpt" | "any"
+type Profile = "go" | "gpt" | "router" | "fw" | "any"
 
 const SEARCH_PATTERNS = [
   /\bwhere\b/i,
@@ -187,16 +203,58 @@ function confidence(score: number): "low" | "medium" | "high" {
 }
 
 function normalizeProfile(input?: string): Profile {
-  if (input === "open" || input === "gpt") return input
+  if (input === "go" || input === "gpt" || input === "router" || input === "fw") return input
   return "any"
+}
+
+function routeFor(profile: Profile, kind: "planner" | "analyzer" | "reviewer" | "context" | "coder" | "operator" | "revenuecat" | "writer"): Route {
+  if (profile === "go") {
+    return {
+      planner: "go-planner",
+      analyzer: "go-analyzer",
+      reviewer: "go-reviewer",
+      context: "go-context",
+      coder: "go-coder",
+      operator: "go-operator",
+      revenuecat: "go-revenuecat-agent",
+      writer: "go-writer",
+    }[kind]
+  }
+
+  if (profile === "router") {
+    return {
+      planner: "router-planner",
+      analyzer: "router-analyzer",
+      reviewer: "router-reviewer",
+      context: "router-context",
+      coder: "router-coder",
+      operator: "router-operator",
+      revenuecat: "router-revenuecat-agent",
+      writer: "router-writer",
+    }[kind]
+  }
+
+  return {
+    planner: "fw-planner",
+    analyzer: "fw-analyzer",
+    reviewer: "fw-reviewer",
+    context: "fw-context",
+    coder: "fw-coder",
+    operator: "fw-operator",
+    revenuecat: "fw-revenuecat-agent",
+    writer: "fw-writer",
+  }[kind]
 }
 
 export default tool({
   description:
-    "Deterministically route a user task to the best workflow for the active profile. Supports open-only and GPT-only orchestration without forcing extra ceremony.",
+    "Deterministically route a user task to the best workflow for the active provider profile without forcing extra ceremony.",
   args: {
     task: tool.schema.string().describe("Compact summary of the user request or current task"),
-    profile: tool.schema.string().optional().describe("Workflow profile: open, gpt, or omit for generic/manual routing"),
+    profile: tool.schema
+      .string()
+      .optional()
+      .describe("Workflow profile: go, gpt, router, fw, or omit for generic/manual routing"),
     fileCount: tool.schema.number().int().nonnegative().optional().describe("Approximate number of relevant files"),
     scopeKnown: tool.schema.boolean().optional().describe("True when implementation scope was already measured from repo evidence rather than guessed from wording"),
     publicApiImpact: tool.schema.boolean().optional().describe("True when the change affects a public API, shared contract, or boundary"),
@@ -238,8 +296,11 @@ export default tool({
     const unknownImplementationScope = implementation && !scopeKnown
     const reviewOnly = review && !implementation
     const writingOnly = writing && !implementation
-    const openOnly = profile === "open"
+    const goOnly = profile === "go"
     const gptOnly = profile === "gpt"
+    const routerOnly = profile === "router"
+    const fwOnly = profile === "fw"
+    const providerOnly = goOnly || routerOnly || fwOnly
 
     let route: Route = "self"
     let followUp: Route | undefined
@@ -254,41 +315,41 @@ export default tool({
       route = "general"
       score = 4
       reasons.push("Multiple independent subtasks can run in parallel")
-    } else if (reviewOnly && openOnly && revenuecat) {
-      route = "revenuecat-agent"
-      followUp = "glm-reviewer"
+    } else if (reviewOnly && providerOnly && revenuecat) {
+      route = routeFor(profile, "revenuecat")
+      followUp = routeFor(profile, "reviewer")
       score = 5
-      reasons.push("Task is review-only and RevenueCat-specific in the open-only workflow")
+      reasons.push("Task is review-only and RevenueCat-specific in a provider-isolated workflow")
     } else if (reviewOnly && gptOnly) {
       route = "gpt-critic"
       score = 4
       reasons.push("Task is review-only inside the GPT-only workflow")
     } else if (reviewOnly && gptEscalation) {
-      route = openOnly ? "glm-reviewer" : "gpt-critic"
+      route = providerOnly ? routeFor(profile, "reviewer") : "gpt-critic"
       score = 4
       reasons.push("Task is review-only and high-stakes")
     } else if (reviewOnly) {
-      route = openOnly ? "glm-reviewer" : "self"
+      route = providerOnly ? routeFor(profile, "reviewer") : "self"
       score = 3
       reasons.push("Task is review-only without implementation")
     } else if (unknownImplementationScope) {
       route = "explore"
       score = 4
       reasons.push("Task likely needs code changes but the real scope is not measured yet")
-    } else if (openOnly && scopedImplementation && largeContext) {
-      route = "kimi-context"
-      followUp = "open-planner"
+    } else if (providerOnly && scopedImplementation && largeContext) {
+      route = routeFor(profile, "context")
+      followUp = routeFor(profile, "planner")
       score = 5
-      reasons.push("Open-only implementation task has measured scope and heavy context")
-    } else if (openOnly && smallScopedImplementation) {
-      route = "qwen-coder"
+      reasons.push("Provider-isolated implementation task has measured scope and heavy context")
+    } else if (providerOnly && smallScopedImplementation) {
+      route = routeFor(profile, "coder")
       score = 5
-      reasons.push("Open-only implementation task is small and measured, so direct execution is faster than planning")
-    } else if (openOnly && scopedImplementation) {
-      route = "open-planner"
-      followUp = "qwen-coder"
+      reasons.push("Provider-isolated implementation task is small and measured, so direct execution is faster than planning")
+    } else if (providerOnly && scopedImplementation) {
+      route = routeFor(profile, "planner")
+      followUp = routeFor(profile, "coder")
       score = 5
-      reasons.push("Open-only implementation task has measured scope and benefits from an explicit plan")
+      reasons.push("Provider-isolated implementation task has measured scope and benefits from an explicit plan")
     } else if (gptOnly && largeContext && scopedImplementation) {
       route = "gpt-planner"
       followUp = "gpt-builder"
@@ -303,33 +364,33 @@ export default tool({
       followUp = "gpt-builder"
       score = 4
       reasons.push("GPT-only implementation task has measured scope and benefits from separated planning and execution")
-    } else if (openOnly && largeContext && rca) {
-      route = "kimi-context"
-      followUp = "glm-analyzer"
+    } else if (providerOnly && largeContext && rca) {
+      route = routeFor(profile, "context")
+      followUp = routeFor(profile, "analyzer")
       score = 5
-      reasons.push("Open-only RCA task has large context and should be compressed first")
-    } else if (openOnly && revenuecat) {
-      route = "revenuecat-agent"
+      reasons.push("Provider-isolated RCA task has large context and should be compressed first")
+    } else if (providerOnly && revenuecat) {
+      route = routeFor(profile, "revenuecat")
       score = 4
       reasons.push("Task is RevenueCat-specific and should use the dedicated MCP specialist")
-    } else if (openOnly && writingOnly) {
-      route = "minimax-writer"
+    } else if (providerOnly && writingOnly) {
+      route = routeFor(profile, "writer")
       score = 4
       reasons.push("Task is mainly naming, rewrite, or copy work")
-    } else if (openOnly && operate) {
-      route = "qwen-operator"
+    } else if (providerOnly && operate) {
+      route = routeFor(profile, "operator")
       score = 4
-      reasons.push("Task is primarily operational in the open-only workflow")
-    } else if (openOnly && largeContext) {
-      route = "kimi-context"
+      reasons.push("Task is primarily operational in a provider-isolated workflow")
+    } else if (providerOnly && largeContext) {
+      route = routeFor(profile, "context")
       score = 4
       reasons.push("Task has large context and should be compressed first")
-    } else if (openOnly && search && !implementation && !rca) {
+    } else if (providerOnly && search && !implementation && !rca) {
       route = "explore"
       score = 3
       reasons.push("Task is mainly repo discovery or code search")
-    } else if (openOnly && rca) {
-      route = "glm-analyzer"
+    } else if (providerOnly && rca) {
+      route = routeFor(profile, "analyzer")
       score = 4
       reasons.push("Task is root cause, debugging, architecture, or tradeoff analysis")
     } else if (search && !implementation && !rca) {
@@ -340,22 +401,37 @@ export default tool({
       reasons.push("Task is simple enough for the current agent to handle directly")
     }
 
-    if (route === "explore") hints.push("Use `explore` to gather file locations, rough scope, and concrete repo evidence before changing code")
-    if (route === "open-planner") hints.push("After planning, hand execution to `qwen-coder` with the plan, constraints, and expected validation")
-    if (route === "gpt-planner-fast") hints.push("Use the short GPT planning path only when a brief written plan will reduce mistakes more than it slows you down")
-    if (route === "gpt-planner") hints.push("If you use a separate executor, pass the plan plus touched files, constraints, and validation steps")
-    if (route === "gpt-builder") hints.push("Keep the coding task narrow and concrete when handing it to `gpt-builder`")
-    if (route === "glm-analyzer") hints.push("Ask for root cause, evidence, fix options, and residual risks")
-    if (route === "glm-reviewer") hints.push("Run review on the final changed state, not on intermediate edits")
-    if (route === "gpt-critic") hints.push("Use GPT review for explicit premium review, second opinions, or high-stakes checks")
-    if (route === "kimi-context") hints.push("Ask for compressed summary, key facts, open questions, and recommended next actions")
-    if (route === "qwen-coder") hints.push("Keep the coding scope narrow and attach any touched-file evidence you already have")
-    if (route === "qwen-operator") hints.push("Use it for tests, evals, git workflow, commit, push, and PR work")
-    if (route === "revenuecat-agent") hints.push("Prefer MCP tool usage over guessing product, entitlement, or subscriber state")
-    if (route === "minimax-writer") hints.push("Ask for 3 to 5 ranked alternatives with short tradeoffs")
-    if (route === "general") hints.push("Split only truly independent work and integrate the outputs in the parent thread")
+    if (route === "explore")
+      hints.push("Use `explore` to gather file locations, rough scope, and concrete repo evidence before changing code")
+    if (route === "go-planner" || route === "router-planner" || route === "fw-planner")
+      hints.push("After planning, hand execution to the matching provider coder with the plan, constraints, and expected validation")
+    if (route === "gpt-planner-fast")
+      hints.push("Use the short GPT planning path only when a brief written plan will reduce mistakes more than it slows you down")
+    if (route === "gpt-planner")
+      hints.push("If you use a separate executor, pass the plan plus touched files, constraints, and validation steps")
+    if (route === "gpt-builder")
+      hints.push("Keep the coding task narrow and concrete when handing it to `gpt-builder`")
+    if (route === "go-analyzer" || route === "router-analyzer" || route === "fw-analyzer")
+      hints.push("Ask for root cause, evidence, fix options, and residual risks")
+    if (route === "go-reviewer" || route === "router-reviewer" || route === "fw-reviewer")
+      hints.push("Run review on the final changed state, not on intermediate edits")
+    if (route === "gpt-critic")
+      hints.push("Use GPT review for explicit premium review, second opinions, or high-stakes checks")
+    if (route === "go-context" || route === "router-context" || route === "fw-context")
+      hints.push("Ask for compressed summary, key facts, open questions, and recommended next actions")
+    if (route === "go-coder" || route === "router-coder" || route === "fw-coder")
+      hints.push("Keep the coding scope narrow and attach any touched-file evidence you already have")
+    if (route === "go-operator" || route === "router-operator" || route === "fw-operator")
+      hints.push("Use it for tests, evals, git workflow, commit, push, and PR work")
+    if (route === "go-revenuecat-agent" || route === "router-revenuecat-agent" || route === "fw-revenuecat-agent")
+      hints.push("Prefer MCP tool usage over guessing product, entitlement, or subscriber state")
+    if (route === "go-writer" || route === "router-writer" || route === "fw-writer")
+      hints.push("Ask for 3 to 5 ranked alternatives with short tradeoffs")
+    if (route === "general")
+      hints.push("Split only truly independent work and integrate the outputs in the parent thread")
     if (followUp) hints.push(`After ${route}, continue with ${followUp}`)
-    if (implementation) hints.push("If requirements are still fuzzy after repo inspection, ask a few targeted questions before editing")
+    if (implementation)
+      hints.push("If requirements are still fuzzy after repo inspection, ask a few targeted questions before editing")
 
     return JSON.stringify(
       {

@@ -2,14 +2,14 @@
 description: Use automatically for tests, evals, git operations, commits, pushes, and PR creation.
 mode: subagent
 hidden: true
-model: opencode-go/deepseek-v4-flash
+model: fireworks-ai/accounts/fireworks/models/deepseek-v3p2
 temperature: 0.1
 color: success
 permission:
   edit: deny
   bash: allow
 ---
-You are an operations-focused execution subagent.
+You are an operations-focused execution subagent for the Fireworks AI workflow.
 
 Use this mode for:
 - running tests
