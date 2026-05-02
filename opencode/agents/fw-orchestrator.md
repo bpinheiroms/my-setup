@@ -14,7 +14,6 @@ permission:
     fw-planner: allow
     fw-analyzer: allow
     fw-reviewer: allow
-    fw-context: allow
     fw-coder: allow
     fw-operator: allow
     fw-revenuecat-agent: allow

@@ -10,7 +10,6 @@ type Route =
   | "go-reviewer"
   | "gpt-builder"
   | "gpt-critic"
-  | "go-context"
   | "go-coder"
   | "go-operator"
   | "go-revenuecat-agent"
@@ -18,7 +17,6 @@ type Route =
   | "router-planner"
   | "router-analyzer"
   | "router-reviewer"
-  | "router-context"
   | "router-coder"
   | "router-operator"
   | "router-revenuecat-agent"
@@ -26,7 +24,6 @@ type Route =
   | "fw-planner"
   | "fw-analyzer"
   | "fw-reviewer"
-  | "fw-context"
   | "fw-coder"
   | "fw-operator"
   | "fw-revenuecat-agent"
@@ -207,13 +204,12 @@ function normalizeProfile(input?: string): Profile {
   return "any"
 }
 
-function routeFor(profile: Profile, kind: "planner" | "analyzer" | "reviewer" | "context" | "coder" | "operator" | "revenuecat" | "writer"): Route {
+function routeFor(profile: Profile, kind: "planner" | "analyzer" | "reviewer" | "coder" | "operator" | "revenuecat" | "writer"): Route {
   if (profile === "go") {
     return {
       planner: "go-planner",
       analyzer: "go-analyzer",
       reviewer: "go-reviewer",
-      context: "go-context",
       coder: "go-coder",
       operator: "go-operator",
       revenuecat: "go-revenuecat-agent",
@@ -226,7 +222,6 @@ function routeFor(profile: Profile, kind: "planner" | "analyzer" | "reviewer" | 
       planner: "router-planner",
       analyzer: "router-analyzer",
       reviewer: "router-reviewer",
-      context: "router-context",
       coder: "router-coder",
       operator: "router-operator",
       revenuecat: "router-revenuecat-agent",
@@ -238,7 +233,6 @@ function routeFor(profile: Profile, kind: "planner" | "analyzer" | "reviewer" | 
     planner: "fw-planner",
     analyzer: "fw-analyzer",
     reviewer: "fw-reviewer",
-    context: "fw-context",
     coder: "fw-coder",
     operator: "fw-operator",
     revenuecat: "fw-revenuecat-agent",
@@ -336,11 +330,6 @@ export default tool({
       route = "explore"
       score = 4
       reasons.push("Task likely needs code changes but the real scope is not measured yet")
-    } else if (providerOnly && scopedImplementation && largeContext) {
-      route = routeFor(profile, "context")
-      followUp = routeFor(profile, "planner")
-      score = 5
-      reasons.push("Provider-isolated implementation task has measured scope and heavy context")
     } else if (providerOnly && smallScopedImplementation) {
       route = routeFor(profile, "coder")
       score = 5
@@ -364,11 +353,6 @@ export default tool({
       followUp = "gpt-builder"
       score = 4
       reasons.push("GPT-only implementation task has measured scope and benefits from separated planning and execution")
-    } else if (providerOnly && largeContext && rca) {
-      route = routeFor(profile, "context")
-      followUp = routeFor(profile, "analyzer")
-      score = 5
-      reasons.push("Provider-isolated RCA task has large context and should be compressed first")
     } else if (providerOnly && revenuecat) {
       route = routeFor(profile, "revenuecat")
       score = 4
@@ -381,10 +365,6 @@ export default tool({
       route = routeFor(profile, "operator")
       score = 4
       reasons.push("Task is primarily operational in a provider-isolated workflow")
-    } else if (providerOnly && largeContext) {
-      route = routeFor(profile, "context")
-      score = 4
-      reasons.push("Task has large context and should be compressed first")
     } else if (providerOnly && search && !implementation && !rca) {
       route = "explore"
       score = 3
@@ -417,8 +397,6 @@ export default tool({
       hints.push("Run review on the final changed state, not on intermediate edits")
     if (route === "gpt-critic")
       hints.push("Use GPT review for explicit premium review, second opinions, or high-stakes checks")
-    if (route === "go-context" || route === "router-context" || route === "fw-context")
-      hints.push("Ask for compressed summary, key facts, open questions, and recommended next actions")
     if (route === "go-coder" || route === "router-coder" || route === "fw-coder")
       hints.push("Keep the coding scope narrow and attach any touched-file evidence you already have")
     if (route === "go-operator" || route === "router-operator" || route === "fw-operator")
