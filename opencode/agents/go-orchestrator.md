@@ -14,7 +14,6 @@ permission:
     go-planner: allow
     go-analyzer: allow
     go-reviewer: allow
-    go-context: allow
     go-coder: allow
     go-operator: allow
     go-revenuecat-agent: allow
@@ -34,7 +33,6 @@ When to delegate:
 - use `go-operator` for tests, evals, git, commits, pushes, PR
 - use `go-analyzer` for root cause analysis
 - use `go-reviewer` for final review
-- use `go-context` for genuinely large context
 - use `go-writer` for naming, copy, alternatives
 - use `general` for parallel independent subtasks
 

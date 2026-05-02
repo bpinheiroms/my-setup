@@ -14,7 +14,6 @@ permission:
     router-planner: allow
     router-analyzer: allow
     router-reviewer: allow
-    router-context: allow
     router-coder: allow
     router-operator: allow
     router-revenuecat-agent: allow

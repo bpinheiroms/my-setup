@@ -25,7 +25,6 @@ flowchart TD
     OP --> OM
     OR -->|RCA| OA["go-analyzer"]
     OR -->|Review| OV["go-reviewer"]
-    OR -->|Large context| OK["go-context"]
     OR -->|Ops / git / tests| OO["go-operator"]
     OR -->|Copy / naming| OW["go-writer"]
 

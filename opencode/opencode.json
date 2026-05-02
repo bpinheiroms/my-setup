@@ -59,7 +59,7 @@
     "router": {
       "description": "Run through the OpenRouter fallback orchestrator",
       "agent": "router-orchestrator",
-      "model": "openrouter/moonshotai/kimi-k2",
+      "model": "openrouter/moonshotai/kimi-k2.6",
       "template": "$ARGUMENTS"
     },
     "fw": {
@@ -92,13 +92,6 @@
       "subtask": true,
       "model": "openai/gpt-5.4",
       "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
-    },
-    "go-ctx": {
-      "description": "Long-context synthesis with Kimi",
-      "agent": "go-context",
-      "subtask": true,
-      "model": "opencode-go/kimi-k2.6",
-      "template": "Process this large context and compress it for action: $ARGUMENTS\n\nReturn:\n- concise summary\n- critical facts\n- open questions\n- recommended next steps"
     },
     "gpt-plan": {
       "description": "Explicit GPT implementation plan",
@@ -170,25 +163,18 @@
       "model": "openrouter/z-ai/glm-5",
       "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
     },
-    "router-ctx": {
-      "description": "Long-context synthesis via OpenRouter",
-      "agent": "router-context",
-      "subtask": true,
-      "model": "openrouter/moonshotai/kimi-k2",
-      "template": "Process this large context and compress it for action: $ARGUMENTS\n\nReturn:\n- concise summary\n- critical facts\n- open questions\n- recommended next steps"
-    },
     "router-plan": {
       "description": "Explicit implementation plan via OpenRouter",
       "agent": "router-planner",
       "subtask": true,
-      "model": "openrouter/moonshotai/kimi-k2",
+      "model": "openrouter/moonshotai/kimi-k2.6",
       "template": "Plan this implementation task for a separate execution agent: $ARGUMENTS\n\nReturn:\n- objective\n- non-goals\n- touched files or modules\n- invariants to preserve\n- ordered execution plan\n- main risks\n- validation checklist"
     },
     "router-plan-open": {
       "description": "Explicit open-model implementation plan via OpenRouter",
       "agent": "router-planner",
       "subtask": true,
-      "model": "openrouter/moonshotai/kimi-k2",
+      "model": "openrouter/moonshotai/kimi-k2.6",
       "template": "Plan this implementation task for a separate execution agent: $ARGUMENTS\n\nReturn:\n- objective\n- non-goals\n- touched files or modules\n- constraints or invariants\n- ordered execution plan\n- validation checklist"
     },
     "router-draft": {
@@ -216,7 +202,7 @@
       "description": "RevenueCat MCP workflow via OpenRouter",
       "agent": "router-revenuecat-agent",
       "subtask": true,
-      "model": "openrouter/moonshotai/kimi-k2",
+      "model": "openrouter/moonshotai/kimi-k2.6",
       "template": "Use RevenueCat MCP tools for this task: $ARGUMENTS\n\nPrefer MCP tool usage over guessing. Summarize what you found and any constraints."
     },
     "fw-rca": {
@@ -239,13 +225,6 @@
       "subtask": true,
       "model": "fireworks-ai/accounts/fireworks/models/glm-5",
       "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
-    },
-    "fw-ctx": {
-      "description": "Long-context synthesis via Fireworks AI",
-      "agent": "fw-context",
-      "subtask": true,
-      "model": "fireworks-ai/accounts/fireworks/models/kimi-k2p6",
-      "template": "Process this large context and compress it for action: $ARGUMENTS\n\nReturn:\n- concise summary\n- critical facts\n- open questions\n- recommended next steps"
     },
     "fw-plan": {
       "description": "Explicit implementation plan via Fireworks AI",
