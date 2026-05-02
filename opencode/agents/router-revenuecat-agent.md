@@ -2,7 +2,7 @@
 description: Use automatically for RevenueCat-specific questions, subscription debugging, offerings, entitlements, and paywall-related workflows.
 mode: subagent
 hidden: true
-model: openrouter/moonshotai/kimi-k2
+model: openrouter/moonshotai/kimi-k2.6
 temperature: 0.1
 color: warning
 permission:

@@ -1,7 +1,7 @@
 ---
 description: OpenRouter fallback orchestration. Same rules as go-orchestrator, works directly without provider-specific subagents.
 mode: primary
-model: openrouter/moonshotai/kimi-k2
+model: openrouter/moonshotai/kimi-k2.6
 temperature: 0.1
 color: info
 permission:

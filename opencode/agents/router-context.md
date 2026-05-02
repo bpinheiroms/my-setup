@@ -2,7 +2,7 @@
 description: Use automatically when context is large: many files, giant diffs, long logs, large specs, or cross-file synthesis.
 mode: subagent
 hidden: true
-model: openrouter/moonshotai/kimi-k2
+model: openrouter/moonshotai/kimi-k2.6
 temperature: 0.2
 color: accent
 permission:
