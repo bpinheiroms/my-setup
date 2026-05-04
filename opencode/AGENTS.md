@@ -1,9 +1,9 @@
 # OpenCode Agents
 
-Keep only two provider workflows enabled:
+Keep two workflows enabled:
 
 - `gpt-orchestrator`: primary cost-aware GPT workflow using only `openai/*` models.
-- `go-orchestrator`: secondary workflow using only `opencode-go/*` models and oh-my-openagent routing.
+- Oh My OpenAgent/OpenCode Go: secondary workflow, entered with `/go`, orchestrated by `sisyphus` from `oh-my-openagent.json`.
 
 GPT tiers:
 
@@ -14,11 +14,10 @@ GPT tiers:
 
 Provider isolation:
 
-- GPT agents must not call GO agents/models unless the user explicitly switches workflow.
-- GO agents must not call GPT agents/models unless the user explicitly switches workflow.
+- GPT agents must not call GO models unless the user explicitly switches workflow.
+- GO routing is owned by Oh My OpenAgent; do not recreate GO custom orchestrators/subagents.
 
 Routing:
 
 - Default command/profile: GPT.
-- Use `/go` when you want the OpenCode Go / oh-my-openagent stack.
-- Use `workflow-route` only with `profile=gpt` or `profile=go`.
+- Use `/go` when you want the OpenCode Go / Oh My OpenAgent stack.

@@ -1,11 +1,11 @@
 # OpenCode Config
 
-Portable OpenCode setup with two provider-isolated workflows:
+Portable OpenCode setup with two workflows:
 
 - **GPT**: default, cost-aware OpenAI stack with explicit quick/balanced/deep/ultra tiers.
-- **GO**: OpenCode Go stack powered by `oh-my-openagent` model routing and fallbacks.
+- **GO**: OpenCode Go stack orchestrated directly by **Oh My OpenAgent** through `sisyphus` and `oh-my-openagent.json`.
 
-The design is inspired by the routing principles in Jatin Malik's guide: <https://medium.com/@jatinkrmalik/opencode-go-oh-my-openagent-the-complete-guide-to-sota-model-routing-without-hitting-limits-49fdc8cb3417>
+The GO design follows the routing principles from Jatin Malik's guide: <https://medium.com/@jatinkrmalik/opencode-go-oh-my-openagent-the-complete-guide-to-sota-model-routing-without-hitting-limits-49fdc8cb3417>
 
 ## Install
 
@@ -40,8 +40,6 @@ bunx oh-my-opencode install --no-tui \
 
 ### 3. Restore this config
 
-From this repo:
-
 ```bash
 mkdir -p ~/.config/opencode
 rsync -a --delete \
@@ -74,7 +72,9 @@ bun add -g @code-yeongyu/comment-checker
 
 ## Core routing principles
 
-The OpenCode Go limits are dollar/request-budget sensitive. A single coding session can trigger many model calls because each tool call, shell step, edit, and delegated agent can become a request. The main rule: **do not burn the best model on every task**.
+OpenCode Go limits are budget/request sensitive. Agentic coding can trigger many model calls because shell commands, file reads, edits, and delegated work may each become requests.
+
+Main rule: **do not burn the best model on every task**.
 
 Use tiered routing:
 
@@ -98,11 +98,11 @@ Use tiered routing:
    - long-context planning
    - design-heavy UI work
 
-Fallbacks are treated as resilience, not failure. Rate limits should route to the next good model instead of stopping the session.
+Fallbacks are resilience, not failure. Rate limits should route to the next good model instead of stopping the session.
 
 ## GPT workflow
 
-Cost-aware GPT stack inspired by the same tiering idea, but mapped to OpenAI models/effort levels instead of open models:
+GPT is **not** managed by Oh My OpenAgent here. It is a small cost-aware stack inspired by the same tiering idea, mapped to OpenAI models/effort levels.
 
 | Command | Agent | Model | Use |
 |---|---|---|---|
@@ -115,14 +115,27 @@ Cost-aware GPT stack inspired by the same tiering idea, but mapped to OpenAI mod
 | `/gpt-ultra` | `gpt-critic` | `openai/gpt-5.5` xhigh | maximum scrutiny |
 | `/gpt-write` | `gpt-writer` | `openai/gpt-5.4-mini` | naming/copy/alternatives |
 
-GPT provider boundary:
+GPT boundary:
 
 - GPT agents use only `openai/*` models.
-- GPT agents do not call GO agents unless the user explicitly switches workflow.
+- GPT does not call GO models unless the user explicitly switches workflow.
 
 ## GO workflow
 
-GO uses `oh-my-openagent.json` for OpenCode Go model routing/fallbacks.
+GO is orchestrated by **Oh My OpenAgent**.
+
+There is intentionally **no** custom `go-orchestrator` and no custom `go-*` subagent tree in this repo. The `/go` command enters the Oh My OpenAgent `sisyphus` agent directly:
+
+```json
+{
+  "go": {
+    "agent": "sisyphus",
+    "model": "opencode-go/kimi-k2.6"
+  }
+}
+```
+
+GO routing/fallbacks live in `oh-my-openagent.json`.
 
 | Category/agent | Primary | Fallbacks | Use |
 |---|---|---|---|
@@ -136,27 +149,15 @@ GO uses `oh-my-openagent.json` for OpenCode Go model routing/fallbacks.
 | `writing` | `opencode-go/qwen3.6-plus` | — | writing/instruction following |
 | `visual-engineering` | `opencode-go/mimo-v2-omni` | `qwen3.6-plus` | multimodal/visual work |
 
-Useful GO commands:
+GO boundary:
 
-| Command | Agent | Use |
-|---|---|---|
-| `/go` | `go-orchestrator` | OpenCode Go default workflow |
-| `/go-rca` | `go-analyzer` | root-cause analysis |
-| `/go-review` | `go-reviewer` | final review |
-| `/go-plan-open` | `go-planner` | explicit open-model plan |
-| `/go-code` | `go-coder` | focused coding pass |
-| `/go-ops` | `go-operator` | tests/evals/git workflow |
-| `/go-draft` | `go-writer` | naming/copy alternatives |
-| `/go-revenuecat` | `go-revenuecat-agent` | RevenueCat MCP workflow |
-
-GO provider boundary:
-
-- GO agents use only `opencode-go/*` models.
-- GO agents do not call GPT agents unless the user explicitly switches workflow.
+- GO models are `opencode-go/*` only.
+- GO planning, review, coding, search, and fallback routing should come from Oh My OpenAgent agents/categories.
+- Do not recreate custom GO orchestrators/subagents unless Oh My OpenAgent cannot cover a future use case.
 
 ## Fallback and concurrency settings
 
-`oh-my-openagent.json` enables:
+`oh-my-openagent.json` enables runtime fallback:
 
 ```json
 {
@@ -172,20 +173,20 @@ GO provider boundary:
 }
 ```
 
-Background concurrency is conservative by model:
+Concurrency is conservative by model:
 
 - Kimi K2.6: low concurrency for elite work
 - GLM 5.1: very low concurrency for reasoning
 - DeepSeek V4 Flash: high concurrency for volume
-- Qwen 3.6 Plus: medium concurrency for broad fallback/writing
+- Qwen 3.6 Plus: medium concurrency for fallback/writing
 
 ## Files
 
 - `opencode.json`: OpenCode commands, default model, MCPs, plugin registration.
 - `oh-my-openagent.json`: OpenCode Go model routing, fallbacks, categories, concurrency.
-- `agents/`: provider-isolated GPT and GO agents.
-- `tools/workflow-route.ts`: deterministic GPT/GO task dispatcher.
-- `skills/revenuecat-agent/`: compatibility shim for GO RevenueCat MCP routing.
+- `agents/`: GPT-only custom agents. GO custom agents are intentionally absent.
+- `tools/workflow-route.ts`: deterministic task dispatcher for the GPT stack.
+- `skills/revenuecat-agent/`: compatibility note for RevenueCat MCP routing.
 
 ## Validation checklist
 
@@ -199,5 +200,6 @@ Expected state:
 
 - OpenCode config valid.
 - Oh My OpenAgent config detected.
-- GPT and GO commands available.
-- Only GPT and GO workflows are present in this setup.
+- `/go` uses `sisyphus` from Oh My OpenAgent.
+- GPT commands available.
+- No custom GO orchestrator/subagent tree in this setup.

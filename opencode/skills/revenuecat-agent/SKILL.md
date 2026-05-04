@@ -1,31 +1,18 @@
 ---
 name: revenuecat-agent
-description: Compatibility shim for RevenueCat routing. If this skill is loaded, delegate to the GO RevenueCat subagent via the Task tool.
+description: Compatibility note for RevenueCat routing in this OpenCode setup.
 ---
 
 # RevenueCat Agent Shim
 
-This entry exists only as a compatibility shim.
+RevenueCat MCP is configured in `opencode.json`, but direct MCP access is disabled by default:
 
-In this setup, RevenueCat access is **not** implemented as a normal skill workflow.
-It is implemented as:
+- `revenuecat_*`: false
 
-- a remote MCP server named `revenuecat`
-- a GO subagent named `go-revenuecat-agent`
+This setup no longer keeps custom GO RevenueCat subagents. GO orchestration is owned by Oh My OpenAgent.
 
-## Required Behavior
+If RevenueCat work is needed:
 
-If this skill is loaded, do **not** continue as a skill-driven workflow.
-
-Instead:
-
-1. Use the `Task` tool.
-2. Delegate to `go-revenuecat-agent` when using the GO workflow.
-3. If the current orchestrator is GPT-only, do not cross the provider boundary unless the user explicitly asks to switch to GO.
-4. Pass the current RevenueCat question or task to that subagent.
-
-## Notes
-
-- Prefer RevenueCat MCP tools over guessing.
-- If the task also needs repo investigation, let the parent agent combine RevenueCat results with normal repo tools/subagents.
-- Do not claim this skill itself can inspect RevenueCat state. The GO RevenueCat subagent does that.
+1. Explicitly enable or scope RevenueCat MCP tools for the intended agent/workflow.
+2. Prefer MCP tool usage over guessing product, entitlement, offering, or subscriber state.
+3. Do not cross provider boundaries unless the user explicitly asks.

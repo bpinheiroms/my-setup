@@ -4,19 +4,21 @@
 flowchart TD
     U[User] --> O[opencode]
     O --> G[gpt-orchestrator]
-    O --> GO[go-orchestrator]
+    O --> S[sisyphus / Oh My OpenAgent]
 
     G --> GP[gpt-planner / gpt-planner-fast]
     G --> GB[gpt-builder]
     G --> GC[gpt-critic]
+    G --> GW[gpt-writer]
 
-    GO --> GR{workflow-route profile=go}
-    GR --> GE[explore]
-    GR --> GPL[go-planner]
-    GR --> GA[go-analyzer]
-    GR --> GV[go-reviewer]
-    GR --> GCOD[go-coder]
-    GR --> GOP[go-operator]
-    GR --> GW[go-writer]
-    GR --> GRC[go-revenuecat-agent]
+    S --> OMO[oh-my-openagent.json]
+    OMO --> H[hephaestus]
+    OMO --> OR[oracle]
+    OMO --> L[librarian / explore]
+    OMO --> CR[code-reviewer]
+    OMO --> C[category routing + fallbacks]
 ```
+
+- GPT uses the custom GPT agents in `agents/`.
+- GO enters Oh My OpenAgent through `sisyphus`.
+- There is no custom GO orchestrator/subagent tree.
