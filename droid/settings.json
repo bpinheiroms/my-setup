@@ -121,49 +121,6 @@
       "provider": "openai"
     }
   ],
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/bruno.silva/.superset/hooks/notify.sh"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/bruno.silva/.superset/hooks/notify.sh"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/bruno.silva/.superset/hooks/notify.sh"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/bruno.silva/.superset/hooks/notify.sh"
-          }
-        ]
-      }
-    ]
-  },
   "enabledPlugins": {
     "core@factory-plugins": true
   },
