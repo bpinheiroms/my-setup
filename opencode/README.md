@@ -17,19 +17,23 @@ Install Oh My OpenAgent:
 
 ```bash
 bunx oh-my-opencode install --no-tui \
-  --opencode-go=yes \
-  --opencode-zen=yes
+  --opencode-go=yes
 ```
 
 Restore this config:
 
 ```bash
 mkdir -p ~/.config/opencode
-rsync -a --delete \
+rsync -a \
   --exclude 'node_modules/' \
   --exclude '.DS_Store' \
   opencode/ ~/.config/opencode/
 ```
+
+The `rsync` command above intentionally omits `--delete` so user-local files in
+`~/.config/opencode` are not removed by default. If you want to prune untracked
+local files, opt in manually by rerunning the same command with `--delete` after
+first reviewing it with `--dry-run`.
 
 Authenticate and validate:
 
