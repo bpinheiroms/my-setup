@@ -1,201 +1,108 @@
-# OpenCode
+# OpenCode Config
 
-OpenCode global setup with four explicit provider-isolated orchestrators:
+Minimal OpenCode setup for **OpenCode Go + Oh My OpenAgent** only.
 
-- `gpt-orchestrator`
-  - primary GPT workflow
-  - uses only `openai/*`
-- `go-orchestrator`
-  - secondary opencode-go workflow
-  - uses only `opencode-go/*`
-- `router-orchestrator`
-  - OpenRouter fallback workflow
-  - uses only `openrouter/*`
-- `fw-orchestrator`
-  - Fireworks AI fallback workflow
-  - uses only `fireworks-ai/*`
+No account rotation and no custom local orchestrators. OpenCode starts directly in Oh My OpenAgent's `sisyphus`.
 
-## Provider Isolation Rule
+Reference: <https://medium.com/@jatinkrmalik/opencode-go-oh-my-openagent-the-complete-guide-to-sota-model-routing-without-hitting-limits-49fdc8cb3417>
 
-Every orchestrator may call only models from its own provider.
+## Install
 
-- GPT -> `openai/*`
-- GO -> `opencode-go/*`
-- Router -> `openrouter/*`
-- Fireworks -> `fireworks-ai/*`
-
-This rule also applies to subagents. If a Router orchestrator delegates, it must call only `router-*` subagents backed by `openrouter/*` models. The same rule applies to GO and Fireworks.
-
-## Fallback Chain
-
-```text
-GPT (primary) -> GO (secondary) -> Router / Fireworks (fallbacks)
+```bash
+curl -fsSL https://opencode.ai/install | bash
+opencode --version
 ```
 
-## Files
+Install Oh My OpenAgent:
 
-- `opencode.json`
-  - main config
-  - default model and default agent
-  - provider-specific commands
-- `AGENTS.md`
-  - global rules shared by all orchestrators
-  - provider boundaries and execution rules
-- `agents/`
-  - primary orchestrators and provider-specific subagents
-- `skills/grill-me/SKILL.md`
-  - stress-test skill for plans and designs
-- `plugins/rtk.ts`
-  - optional command rewrite plugin
-- `tools/workflow-route.ts`
-  - deterministic router with `go`, `gpt`, `router`, and `fw` profiles
+```bash
+bunx oh-my-opencode install --no-tui \
+  --opencode-go=yes
+```
 
-## Primary Orchestrators
-
-### `gpt-orchestrator`
-
-Use when:
-
-- OpenAI quota is available
-- you want the most interactive workflow
-- GPT judgment is the priority
-
-Behavior:
-
-- works directly in the current thread by default
-- asks clarifying questions early when needed
-- delegates only to `gpt-*` subagents
-
-### `go-orchestrator`
-
-Use when:
-
-- OpenAI quota is unavailable or you want to save it
-- you want a strong specialized open-model path
-
-Behavior:
-
-- delegates only to `go-*` subagents
-- keeps all execution inside the `opencode-go/*` provider
-
-### `router-orchestrator`
-
-Use when:
-
-- you want or need to run through OpenRouter
-- you still want provider isolation even when delegating
-
-Behavior:
-
-- works directly by default
-- may delegate only to `router-*` subagents
-- keeps all execution inside the `openrouter/*` provider
-
-### `fw-orchestrator`
-
-Use when:
-
-- you want or need to run through Fireworks AI
-- you still want provider isolation even when delegating
-
-Behavior:
-
-- works directly by default
-- may delegate only to `fw-*` subagents
-- keeps all execution inside the `fireworks-ai/*` provider
-
-## Choosing a Mode
-
-OpenCode supports:
-
-- switching primary agents in-session
-- targeting a specific agent via commands
-- mentioning subagents directly with `@`
-
-Practical guidance:
-
-- start with `gpt-orchestrator`
-- switch to `go-orchestrator` when GPT quota is unavailable
-- switch to `router-orchestrator` or `fw-orchestrator` when you need those providers specifically
-
-References:
-
-- [Agents](https://opencode.ai/docs/agents/)
-- [Config](https://opencode.ai/docs/config/)
-- [Commands](https://opencode.ai/docs/commands/)
-- [Skills](https://opencode.ai/docs/skills/)
-
-## Commands
-
-- `/gpt` -> `gpt-orchestrator`
-- `/go` -> `go-orchestrator`
-- `/router` -> `router-orchestrator`
-- `/fw` -> `fw-orchestrator`
-- `/go-rca`, `/router-rca`, `/fw-rca` -> provider-specific RCA
-- `/go-review`, `/router-review`, `/fw-review` -> provider-specific final review
-- `/go-ops`, `/router-ops`, `/fw-ops` -> provider-specific operational workflows
-- `/code-gpt` -> GPT coding pass
-- `/go-code`, `/router-code`, `/fw-code` -> provider-specific coding pass
-
-## Skills
-
-### `grill-me`
-
-Purpose:
-
-- challenge a plan before implementation
-- surface missing assumptions
-- force clearer decisions on scope, rollout, and validation
-
-Behavior:
-
-- asks one question at a time
-- includes a recommended answer with each question
-- checks the repo first if the answer may already exist there
-
-Use it when you want the model to push back instead of executing immediately.
-
-## Installation
-
-This repository stores OpenCode configuration, not the OpenCode binary.
-
-### Prerequisites
-
-- OpenCode installed
-- provider authentication already configured
-- `bun` or `npm` available for the local plugin dependency
-
-### Install
+Restore this config:
 
 ```bash
 mkdir -p ~/.config/opencode
-rsync -a opencode/ ~/.config/opencode/
-cd ~/.config/opencode && bun install
+rsync -a \
+  --exclude 'node_modules/' \
+  --exclude '.DS_Store' \
+  opencode/ ~/.config/opencode/
 ```
 
-If you do not use Bun:
+The `rsync` command above intentionally omits `--delete` so user-local files in
+`~/.config/opencode` are not removed by default. If you want to prune untracked
+local files, opt in manually by rerunning the same command with `--delete` after
+first reviewing it with `--dry-run`.
+
+Authenticate and validate:
 
 ```bash
-cd ~/.config/opencode && npm install
+opencode auth login
+opencode models --refresh
+bunx oh-my-opencode refresh-model-capabilities
+bunx oh-my-opencode doctor --verbose
 ```
 
-### Verify
+Optional warning fix:
 
 ```bash
-opencode debug config
-opencode agent list
+bun add -g @code-yeongyu/comment-checker
 ```
 
-Expected result:
+## Usage
 
-- default agent is `gpt-orchestrator`
-- custom primary agents include `gpt-orchestrator`, `go-orchestrator`, `router-orchestrator`, and `fw-orchestrator`
-- the `grill-me` skill is discoverable
-- provider-specific commands are visible
+Start OpenCode normally:
 
-## Design Notes
+```bash
+opencode
+```
 
-- default model is `openai/gpt-5.4`
-- provider isolation is strict across orchestrators and subagents
-- shared orchestration rules live in `AGENTS.md`
-- `workflow-route.ts` returns provider-specific routes instead of generic open-model routes
+Default agent:
+
+```text
+sisyphus
+```
+
+Equivalent explicit command:
+
+```text
+/go <task>
+```
+
+## Routing principles
+
+Use the right model tier for the task:
+
+- volume/search/simple work: cheaper fast models
+- standard engineering: balanced models
+- architecture/high-risk/refactor: elite reasoning models
+- visual/multimodal: specialized models
+
+Fallbacks are resilience, not failure. Rate limits should switch to the next suitable model instead of breaking the workflow.
+
+## Main Oh My OpenAgent roles
+
+| Agent | Use |
+|---|---|
+| `sisyphus` | default orchestration and end-to-end tasks |
+| `hephaestus` | implementation/execution when scope is clear |
+| `prometheus` | planning/spec/scoping before code |
+| `oracle` | architecture and hard decisions |
+| `atlas` | terminal, tests, validation, git-style operations |
+| `librarian` / `explore` | search, discovery, reference work |
+
+## Files
+
+- `opencode.json`: minimal OpenCode config, defaulting to `sisyphus`.
+- `oh-my-openagent.json`: OpenCode Go model routing, fallbacks, categories, concurrency.
+- `AGENTS.md`: local instruction boundary.
+- `WORKFLOW_DIAGRAM.md`: flow overview.
+
+## Validation
+
+```bash
+python3 -m json.tool ~/.config/opencode/opencode.json >/dev/null
+python3 -m json.tool ~/.config/opencode/oh-my-openagent.json >/dev/null
+bunx oh-my-opencode doctor --verbose
+```
