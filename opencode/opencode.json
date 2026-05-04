@@ -1,18 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "revenuecat": {
-      "type": "remote",
-      "url": "https://mcp.revenuecat.ai/mcp",
-      "enabled": true
-    }
-  },
-  "tools": {
-    "revenuecat_*": false
-  },
-  "agent": {},
-  "model": "openai/gpt-5.4",
-  "default_agent": "gpt-orchestrator",
+  "model": "opencode-go/kimi-k2.6",
+  "default_agent": "sisyphus",
   "compaction": {
     "auto": true,
     "prune": true,
@@ -28,61 +17,8 @@
     ]
   },
   "command": {
-    "gpt": {
-      "description": "Run through the cost-aware GPT orchestrator (balanced/default)",
-      "agent": "gpt-orchestrator",
-      "model": "openai/gpt-5.4",
-      "template": "$ARGUMENTS"
-    },
-    "gpt-quick": {
-      "description": "Cheap/fast GPT route for simple tasks",
-      "agent": "gpt-orchestrator",
-      "model": "openai/gpt-5.4-mini",
-      "template": "Handle this quickly and cost-efficiently. Keep reasoning light unless needed: $ARGUMENTS"
-    },
-    "gpt-deep": {
-      "description": "Deep GPT route for complex implementation, architecture, or debugging",
-      "agent": "gpt-orchestrator",
-      "model": "openai/gpt-5.5",
-      "template": "Handle this as a complex task. Use deeper reasoning and delegate to GPT planner/critic only when it reduces risk: $ARGUMENTS"
-    },
-    "gpt-ultra": {
-      "description": "Maximum GPT reasoning for high-stakes decisions and reviews",
-      "agent": "gpt-critic",
-      "subtask": true,
-      "model": "openai/gpt-5.5",
-      "template": "Use maximum scrutiny for this high-stakes task: $ARGUMENTS\n\nReturn:\n- key risks\n- best recommendation\n- alternatives considered\n- residual uncertainty"
-    },
-    "gpt-write": {
-      "description": "Cost-efficient GPT writing, naming, and alternatives",
-      "agent": "gpt-writer",
-      "subtask": true,
-      "model": "openai/gpt-5.4-mini",
-      "template": "Create 3 to 5 strong alternatives for: $ARGUMENTS\n\nOptimize for clarity, taste, and usefulness. Rank the best option first and explain tradeoffs briefly."
-    },
-    "gpt-plan": {
-      "description": "Explicit GPT implementation plan",
-      "agent": "gpt-planner",
-      "subtask": true,
-      "model": "openai/gpt-5.5",
-      "template": "Plan this implementation task for a separate execution agent: $ARGUMENTS\n\nReturn:\n- objective\n- non-goals\n- touched files or modules\n- invariants to preserve\n- ordered execution plan\n- main risks\n- validation checklist"
-    },
-    "gpt-judge": {
-      "description": "Second opinion or high-stakes review with GPT",
-      "agent": "gpt-critic",
-      "subtask": true,
-      "model": "openai/gpt-5.5",
-      "template": "Review this work as a strong second opinion: $ARGUMENTS\n\nReturn:\n- key findings or risks\n- whether the current approach is sound\n- the most important fix or improvement\n- residual uncertainty"
-    },
-    "code-gpt": {
-      "description": "Focused GPT coding pass",
-      "agent": "gpt-builder",
-      "subtask": true,
-      "model": "openai/gpt-5.4",
-      "template": "Implement this coding task precisely: $ARGUMENTS\n\nTreat parent instructions and scope as binding unless repo evidence proves they are wrong. Prefer the smallest literal implementation, focused diffs, and direct verification."
-    },
     "go": {
-      "description": "Run through oh-my-openagent Sisyphus orchestrator (OpenCode Go)",
+      "description": "Run through Oh My OpenAgent Sisyphus on OpenCode Go",
       "agent": "sisyphus",
       "model": "opencode-go/kimi-k2.6",
       "template": "$ARGUMENTS"
