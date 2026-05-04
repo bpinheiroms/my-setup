@@ -34,6 +34,7 @@ Restart Factory Droid after copying the file.
 
 ## Notes
 
+- Uses `factory-dark` because Factory Droid's light theme renders low-contrast text in dark terminal sessions.
 - Droid only talks to VibeProxy. Account rotation is handled inside VibeProxy/CLIProxyAPI.
 - OpenAI-compatible providers use `baseUrl` ending in `/v1`.
 - The `apiKey` value is the local proxy placeholder expected by VibeProxy, not a real OpenAI API key.

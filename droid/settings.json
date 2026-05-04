@@ -167,6 +167,6 @@
   "enabledPlugins": {
     "core@factory-plugins": true
   },
-  "theme": "factory-light",
+  "theme": "factory-dark",
   "logoAnimation": "off"
 }
