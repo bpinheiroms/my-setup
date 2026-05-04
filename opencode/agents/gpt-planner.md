@@ -2,8 +2,8 @@
 description: GPT planner for implementation work that benefits from an explicit plan before execution.
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-reasoningEffort: medium
+model: openai/gpt-5.5
+reasoningEffort: high
 color: warning
 permission:
   edit: deny

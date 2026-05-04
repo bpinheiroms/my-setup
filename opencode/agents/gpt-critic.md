@@ -2,8 +2,8 @@
 description: GPT second-opinion reviewer for explicit review requests and high-stakes final checks.
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-reasoningEffort: medium
+model: openai/gpt-5.5
+reasoningEffort: xhigh
 color: warning
 permission:
   edit: deny

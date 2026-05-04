@@ -2,8 +2,8 @@
 description: Short GPT planning pass for small implementation work when a brief plan will reduce mistakes.
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-reasoningEffort: low
+model: openai/gpt-5.4-mini
+reasoningEffort: high
 color: warning
 permission:
   edit: deny

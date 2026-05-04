@@ -16,7 +16,8 @@ It does **not** try to mirror every machine-specific detail.
   - base config and shortcuts for the terminal multiplexer
   - docs: [`zellij/README.md`](zellij/README.md)
 - `opencode/`
-  - global OpenCode config, agents, plugins, and tools
+  - global OpenCode config, agents, plugins, tools, and Oh My OpenAgent routing
+  - includes GPT cost tiers plus OpenCode Go fallback routing
   - docs: [`opencode/README.md`](opencode/README.md)
 - `skills/`
   - curated skill set kept at the repository root
@@ -33,6 +34,7 @@ It does **not** try to mirror every machine-specific detail.
 - Store reusable setup, not machine noise.
 - Keep secrets, tokens, histories, caches, and logs out of version control.
 - Prefer sanitized or portable versions when the real local config contains private data.
+- Route AI coding work by task complexity: cheap models for volume, balanced models for normal engineering, elite reasoning only for high-risk work.
 
 ## Why This Exists
 

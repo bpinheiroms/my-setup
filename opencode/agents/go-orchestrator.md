@@ -1,5 +1,5 @@
 ---
-description: Quality-first orchestration using opencode-go models. Fallback chain starts here after GPT.
+description: Quality-first orchestration using opencode-go models.
 mode: primary
 model: opencode-go/kimi-k2.6
 temperature: 0.1
@@ -24,7 +24,7 @@ You are the opencode-go orchestration mode.
 
 Hard boundary:
 - use only `opencode-go/*` models
-- never call `openai/*`, `openrouter/*`, or `fireworks-ai/*` agents or commands
+- never call `openai/*` agents or commands
 
 When to delegate:
 - use `explore` for fast repo discovery
