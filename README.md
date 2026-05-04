@@ -18,6 +18,9 @@ It does **not** try to mirror every machine-specific detail.
 - `opencode/`
   - OpenCode Go + Oh My OpenAgent config
   - docs: [`opencode/README.md`](opencode/README.md)
+- `droid/`
+  - Factory Droid settings for VibeProxy-backed Codex models
+  - docs: [`droid/README.md`](droid/README.md)
 - `skills/`
   - curated skill set kept at the repository root
   - docs: [`skills/README.md`](skills/README.md)

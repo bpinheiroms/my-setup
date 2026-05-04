@@ -1,0 +1,172 @@
+{
+  "diffMode": "github",
+  "enableCompletionBell": true,
+  "allowBackgroundProcesses": true,
+  "showThinkingInMainView": false,
+  "ideAutoConnect": false,
+  "showTokenUsageIndicator": true,
+  "enableWarmup": true,
+  "enableCustomDroids": true,
+  "includeCoAuthoredByDroid": false,
+  "enableDroidShield": false,
+  "todoDisplayMode": "pinned",
+  "autonomyLevel": "auto-medium",
+  "specSaveEnabled": true,
+  "sessionDefaultSettings": {
+    "model": "custom:VibeProxy-GPT-5.5-0",
+    "reasoningEffort": "high",
+    "autonomyMode": "auto-high",
+    "specModeModel": "custom:VibeProxy-GPT-5.4-1",
+    "specModeReasoningEffort": "high"
+  },
+  "customModels": [
+    {
+      "model": "gpt-5.5",
+      "id": "custom:VibeProxy-GPT-5.5-0",
+      "index": 0,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.5 [VibeProxy Codex]",
+      "noImageSupport": false,
+      "provider": "openai"
+    },
+    {
+      "model": "gpt-5.4",
+      "id": "custom:VibeProxy-GPT-5.4-1",
+      "index": 1,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.4 [VibeProxy Codex]",
+      "noImageSupport": false,
+      "provider": "openai"
+    },
+    {
+      "model": "gpt-5.4-mini",
+      "id": "custom:VibeProxy-GPT-5.4-Mini-2",
+      "index": 2,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.4 Mini [VibeProxy Codex]",
+      "noImageSupport": false,
+      "provider": "openai"
+    },
+    {
+      "model": "gpt-5.3-codex",
+      "id": "custom:VibeProxy-GPT-5.3-Codex-3",
+      "index": 3,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.3 Codex [VibeProxy Codex]",
+      "noImageSupport": true,
+      "provider": "openai"
+    },
+    {
+      "model": "gpt-5.3-codex-spark",
+      "id": "custom:VibeProxy-GPT-5.3-Codex-Spark-4",
+      "index": 4,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.3 Codex Spark [VibeProxy Codex]",
+      "noImageSupport": true,
+      "provider": "openai"
+    },
+    {
+      "model": "gpt-5.2",
+      "id": "custom:VibeProxy-GPT-5.2-5",
+      "index": 5,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.2 [VibeProxy Codex]",
+      "noImageSupport": false,
+      "provider": "openai"
+    },
+    {
+      "model": "gpt-5.4(high)",
+      "id": "custom:VibeProxy-GPT-5.4-High-6",
+      "index": 6,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.4 High [VibeProxy Codex]",
+      "noImageSupport": false,
+      "provider": "openai"
+    },
+    {
+      "model": "gpt-5.4(xhigh)",
+      "id": "custom:VibeProxy-GPT-5.4-XHigh-7",
+      "index": 7,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.4 XHigh [VibeProxy Codex]",
+      "noImageSupport": false,
+      "provider": "openai"
+    },
+    {
+      "model": "gpt-5.4(medium)",
+      "id": "custom:VibeProxy-GPT-5.4-Medium-8",
+      "index": 8,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.4 Medium [VibeProxy Codex]",
+      "noImageSupport": false,
+      "provider": "openai"
+    },
+    {
+      "model": "gpt-5.4(low)",
+      "id": "custom:VibeProxy-GPT-5.4-Low-9",
+      "index": 9,
+      "baseUrl": "http://localhost:8317/v1",
+      "apiKey": "CLI_PROXY_API_KEY",
+      "displayName": "GPT-5.4 Low [VibeProxy Codex]",
+      "noImageSupport": false,
+      "provider": "openai"
+    }
+  ],
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bruno.silva/.superset/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bruno.silva/.superset/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bruno.silva/.superset/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bruno.silva/.superset/hooks/notify.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "core@factory-plugins": true
+  },
+  "theme": "factory-light",
+  "logoAnimation": "off"
+}
