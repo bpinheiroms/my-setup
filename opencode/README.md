@@ -1,23 +1,14 @@
 # OpenCode Config
 
-Minimal OpenCode setup for **OpenCode Go + Oh My OpenAgent** only.
+Minimal plain OpenCode setup.
 
-No account rotation and no custom local orchestrators. OpenCode starts directly in Oh My OpenAgent's `sisyphus`.
-
-Reference: <https://medium.com/@jatinkrmalik/opencode-go-oh-my-openagent-the-complete-guide-to-sota-model-routing-without-hitting-limits-49fdc8cb3417>
+No account rotation, no Oh My OpenAgent plugin, and no custom local orchestrators. OpenCode starts with the configured default model and can be overridden per session with `-m`.
 
 ## Install
 
 ```bash
 curl -fsSL https://opencode.ai/install | bash
 opencode --version
-```
-
-Install Oh My OpenAgent:
-
-```bash
-bunx oh-my-opencode install --no-tui \
-  --opencode-go=yes
 ```
 
 Restore this config:
@@ -40,14 +31,6 @@ Authenticate and validate:
 ```bash
 opencode auth login
 opencode models --refresh
-bunx oh-my-opencode refresh-model-capabilities
-bunx oh-my-opencode doctor --verbose
-```
-
-Optional warning fix:
-
-```bash
-bun add -g @code-yeongyu/comment-checker
 ```
 
 ## Usage
@@ -58,19 +41,21 @@ Start OpenCode normally:
 opencode
 ```
 
-Default agent:
+Default model:
 
 ```text
-sisyphus
+opencode-go/kimi-k2.6
 ```
 
-Equivalent explicit command:
+Override the model per session:
 
-```text
-/go <task>
+```bash
+opencode -m opencode-go/deepseek-v4-pro
+opencode -m opencode-go/qwen3.6-plus
+opencode -m opencode-go/kimi-k2.6
 ```
 
-## Routing principles
+## Model selection
 
 Use the right model tier for the task:
 
@@ -79,23 +64,11 @@ Use the right model tier for the task:
 - architecture/high-risk/refactor: elite reasoning models
 - visual/multimodal: specialized models
 
-Fallbacks are resilience, not failure. Rate limits should switch to the next suitable model instead of breaking the workflow.
-
-## Main Oh My OpenAgent roles
-
-| Agent | Use |
-|---|---|
-| `sisyphus` | default orchestration and end-to-end tasks |
-| `hephaestus` | implementation/execution when scope is clear |
-| `prometheus` | planning/spec/scoping before code |
-| `oracle` | architecture and hard decisions |
-| `atlas` | terminal, tests, validation, git-style operations |
-| `librarian` / `explore` | search, discovery, reference work |
+There are no local routing/fallback rules in this config. Model choice is explicit through the `model` field or the `opencode -m <provider/model>` flag.
 
 ## Files
 
-- `opencode.json`: minimal OpenCode config, defaulting to `sisyphus`.
-- `oh-my-openagent.json`: OpenCode Go model routing, fallbacks, categories, concurrency.
+- `opencode.json`: minimal OpenCode config with a default model.
 - `AGENTS.md`: local instruction boundary.
 - `WORKFLOW_DIAGRAM.md`: flow overview.
 
@@ -103,6 +76,5 @@ Fallbacks are resilience, not failure. Rate limits should switch to the next sui
 
 ```bash
 python3 -m json.tool ~/.config/opencode/opencode.json >/dev/null
-python3 -m json.tool ~/.config/opencode/oh-my-openagent.json >/dev/null
-bunx oh-my-opencode doctor --verbose
+opencode --help
 ```

@@ -1,7 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "model": "opencode-go/kimi-k2.6",
-  "default_agent": "sisyphus",
   "compaction": {
     "auto": true,
     "prune": true,
@@ -15,16 +14,5 @@
       "dist/**",
       "build/**"
     ]
-  },
-  "command": {
-    "go": {
-      "description": "Run through Oh My OpenAgent Sisyphus on OpenCode Go",
-      "agent": "sisyphus",
-      "model": "opencode-go/kimi-k2.6",
-      "template": "$ARGUMENTS"
-    }
-  },
-  "plugin": [
-    "oh-my-openagent@latest"
-  ]
+  }
 }

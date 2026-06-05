@@ -3,14 +3,10 @@
 ```mermaid
 flowchart TD
     U[User] --> O[opencode]
-    O --> S[sisyphus / Oh My OpenAgent]
-    S --> CFG[oh-my-openagent.json]
-    CFG --> H[hephaestus]
-    CFG --> P[prometheus]
-    CFG --> OR[oracle]
-    CFG --> A[atlas]
-    CFG --> L[librarian / explore]
-    CFG --> C[categories + fallbacks]
+    O --> M[Configured model]
+    U --> OV[Optional -m provider/model]
+    OV --> O
+    M --> T[Plain OpenCode session]
 ```
 
-OpenCode starts directly in `sisyphus`. There are no custom provider-specific or GO-local agents.
+OpenCode starts with the configured default model. Use `opencode -m <provider/model>` to override it per session.

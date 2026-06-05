@@ -1,10 +1,9 @@
 # OpenCode Agents
 
-This setup intentionally uses only Oh My OpenAgent for OpenCode Go.
+This setup uses plain OpenCode locally.
 
-- Default agent: `sisyphus`
-- Provider: `opencode-go/*`
-- Routing/fallbacks: `oh-my-openagent.json`
+- Default model: `opencode-go/kimi-k2.6`
+- Override per session with `opencode -m <provider/model>`.
 
 ## Token Economy
 
@@ -12,4 +11,4 @@ This setup intentionally uses only Oh My OpenAgent for OpenCode Go.
 - Use RTK for shell commands by default. Prefix shell commands with `rtk` when possible.
 
 Do not add local provider-specific orchestration here.
-Do not recreate custom GO orchestrators/subagents unless Oh My OpenAgent cannot cover a future use case.
+Do not recreate custom GO orchestrators/subagents.

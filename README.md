@@ -26,7 +26,7 @@ It does **not** try to mirror every machine-specific detail.
   - base config and shortcuts for the terminal multiplexer
   - docs: [`zellij/README.md`](zellij/README.md)
 - `opencode/`
-  - OpenCode Go + Oh My OpenAgent config
+  - plain OpenCode config
   - docs: [`opencode/README.md`](opencode/README.md)
 - `droid/`
   - Factory Droid settings
